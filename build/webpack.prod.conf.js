@@ -6,7 +6,7 @@ const path = require('path')
 
 config.output.filename = 'vue-hotel-datepicker.min.js'
 config.output.libraryTarget = 'umd'
-config.output.library = 'HotelDatePicker'
+config.output.library = 'hotel-date-picker'
 
 config.entry = path.resolve(__dirname, '../src/components/DatePicker.vue')
 

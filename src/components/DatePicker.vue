@@ -9,7 +9,7 @@
         :is-open="isOpen"
         :show-datepicker="showDatepicker"
         :hide-datepicker="hideDatepicker"
-        :toggle-datepicker="toggleDatepicker"
+        :toggle-datepicker="toggleDatepickerIn"
         :single-day-selection="singleDaySelection"
       )
       date-input(
@@ -20,17 +20,14 @@
         :is-open="isOpen"
         :showDatepicker="showDatepicker"
         :hide-datepicker="hideDatepicker"
-        :toggle-datepicker="toggleDatepicker"
+        :toggle-datepicker="toggleDatepickerOut"
         :single-day-selection="singleDaySelection"
       )
-    .datepicker__clear-button(tabindex="0" @click='clearSelection' v-if="showClearSelectionButton")
-      svg(xmlns='http://www.w3.org/2000/svg' viewBox="0 0 68 68")
-        path(d='M6.5 6.5l55 55M61.5 6.5l-55 55')
 
     .datepicker( :class='`${ isOpen ? "datepicker--open" : "datepicker--closed" }`')
       .-hide-on-desktop
         .datepicker__dummy-wrapper.datepicker__dummy-wrapper--no-border(
-          @click='toggleDatepicker' :class="`${isOpen ? 'datepicker__dummy-wrapper--is-active' : ''}`"
+          :class="`${isOpen ? 'datepicker__dummy-wrapper--is-active' : ''}`"
           v-if='isOpen'
         )
           .datepicker__input(
@@ -38,12 +35,14 @@
             :class="`${isOpen && checkIn == null ? 'datepicker__dummy-input--is-active' : ''}`"
             v-text="`${checkIn ? formatDate(checkIn) : i18n['check-in']}`"
             type="button"
+            @click='toggleDatepickerIn'
           )
           .datepicker__input(
             tabindex="0"
             :class="`${isOpen && checkOut == null && checkIn !== null ? 'datepicker__dummy-input--is-active' : ''}`"
             v-text="`${checkOut ? formatDate(checkOut) : i18n['check-out']}`"
             type="button"
+            @click='toggleDatepickerOut'
           )
       .datepicker__inner
         .datepicker__header
@@ -146,7 +145,7 @@
   };
 
   export default {
-    name: 'HotelDatePicker',
+    name: 'hotel-date-picker',
 
     directives: {
       'on-click-outside': onClickOutside
@@ -386,8 +385,16 @@
         this.isOpen = true;
       },
 
-      toggleDatepicker() {
-        this.isOpen = !this.isOpen;
+      toggleDatepickerIn() {
+        if (!this.isOpen) {
+          this.isOpen = true
+        }
+      },
+
+      toggleDatepickerOut() {
+        if (!this.isOpen) {
+          this.isOpen = true
+        }
       },
 
       clickOutside() {
@@ -399,17 +406,26 @@
       handleDayClick(event) {
 
         if (this.checkIn == null && this.singleDaySelection == false) {
-          this.checkIn = event.date;
+          if (this.checkOut !== null && event.date < this.checkOut) {
+            this.checkIn = event.date;
+          }
+          else {
+            this.checkIn = event.date;
+            this.checkOut = null;
+          }
         } else if (this.singleDaySelection == true) {
           this.checkIn = event.date
           this.checkOut = event.date
         }
-        else if (this.checkIn !== null && this.checkOut == null) {
-          this.checkOut = event.date;
-        }
+        // else if (this.checkIn !== null && this.checkOut == null) {
+        //   this.checkOut = event.date;
+        // }
+        // else {
+        //   this.checkOut = null;
+        //   this.checkIn = event.date;
+        // }
         else {
-          this.checkOut = null;
-          this.checkIn = event.date;
+          this.checkOut = event.date;
         }
 
         this.nextDisabledDate = event.nextDisabledDate
@@ -680,7 +696,7 @@
             display: inline-block;
             width: 100%;
             height: 48px;
-            background: $white url('calendar_icon.regular.svg') no-repeat 17px center / 16px;
+            // background: $white url('calendar_icon.regular.svg') no-repeat 17px center / 16px;
         }
 
         &__input {
@@ -741,7 +757,6 @@
             &:first-child {
                 background: transparent url('ic-arrow-right-datepicker.regular.svg') no-repeat right center / 8px;
                 width: calc(50% - 4px);
-                text-indent: 20px;
             }
 
             &--is-active {

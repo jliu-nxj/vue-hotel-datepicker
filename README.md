@@ -26,17 +26,17 @@ npm install vue-hotel-datepicker --save
 ```
 
 ```javascript
-import HotelDatePicker from 'vue-hotel-datepicker'
+import hotel-date-picker from 'vue-hotel-datepicker'
 
 export default {
   components: {
-    HotelDatePicker,
+    hotel-date-picker,
   },
 }
 ```
 
 ```html
-<HotelDatePicker />
+<hotel-date-picker />
 ```
 
 

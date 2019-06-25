@@ -12,6 +12,7 @@
     "dev": "webpack-dev-server --inline --hot --open --config build/webpack.dev.conf.js",
     "build": "rimraf dist && webpack --progress --hide-modules --config build/webpack.prod.conf.js",
     "lint": "eslint */*.vue */*.js --quiet",
+    "lint:css": "stylelint '**/*.vue' --syntax scss",
     "test": "ENV=test mocha-webpack --webpack-config build/webpack.prod.conf.js tests/unit --recursive --require tests/setup.js --reporter nyan --exit"
   },
   "repository": {
@@ -35,6 +36,7 @@
   },
   "homepage": "https://github.com/krystalcampioni/vue-hotel-datepicker",
   "devDependencies": {
+    "@mapbox/stylelint-processor-arbitrary-tags": "^0.2.0",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.0.1",
@@ -60,6 +62,11 @@
     "rimraf": "^2.6.1",
     "sass-loader": "^6.0.5",
     "style-loader": "^0.19.0",
+    "stylelint": "^10.1.0",
+    "stylelint-config-standard": "^18.3.0",
+    "stylelint-processor-html": "^1.0.0",
+    "stylelint-scss": "^3.8.0",
+    "stylelint-webpack-plugin": "^0.10.5",
     "uglifyjs-webpack-plugin": "^0.4.3",
     "url-loader": "^0.6.2",
     "vue": "^2.3.3",
@@ -73,6 +80,7 @@
     "cssnano": "^3.10.0",
     "fecha": "^2.3.1",
     "lodash.throttle": "^4.1.1",
+    "moment": "^2.24.0",
     "pug": "^2.0.0-rc.3",
     "vue-on-click-outside": "^1.0.3"
   }

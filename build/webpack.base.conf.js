@@ -23,7 +23,8 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
-            preserveWhitespace: false,
+          esModule: false,
+          preserveWhitespace: false,
           postcss: [
             require('autoprefixer')({
               browsers: ['last 10 versions', 'ie 11']
@@ -35,7 +36,6 @@ module.exports = {
               safe: true,
             }),
           ],
-
           loaders: {
             scss: 'vue-style-loader!css-loader!sass-loader?minimize?{discardComments:{removeAll:true}}',
           },

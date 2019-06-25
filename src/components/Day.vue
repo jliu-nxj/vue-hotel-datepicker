@@ -1,19 +1,21 @@
 <template lang='pug'>
   div
-    .datepicker__tooltip(v-if='showTooltip && this.options.hoveringTooltip' v-html='tooltipMessageDisplay')
-    .datepicker__month-day(
-      @click.prevent.stop='dayClicked(date)'
-      @keyup.enter.prevent.stop='dayClicked(date)'
-      v-text='dayNumber'
-      :class='dayClass'
-      :style='isToday ? currentDateStyle : ""'
-      :tabindex="tabIndex"
-      ref="day"
-    )
+    .datepicker__selected(:class='selectedClass')
+      .datepicker__tooltip(v-if='showTooltip && this.options.hoveringTooltip' v-html='tooltipMessageDisplay')
+      .datepicker__month-day(
+        @click.prevent.stop='dayClicked(date)'
+        @keyup.enter.prevent.stop='dayClicked(date)'
+        v-text='dayNumber'
+        :class='dayClass'
+        :tabindex="tabIndex"
+        ref="day"
+      )
 </template>
 
+<style></style>
+
 <script>
-import fecha from 'fecha';
+import moment from 'moment';
 
 import Helpers from './helpers.js'
 
@@ -66,9 +68,6 @@ export default {
       default: null,
       type: String
     },
-    currentDateStyle:{
-      required: true,
-    }
   },
 
   data() {
@@ -106,7 +105,22 @@ export default {
     isToday() {
       return this.compareDay(this.currentDate, this.date) == 0;
     },
-
+    selectedClass() {
+      if (this.belongsToThisMonth) {
+        // Highlight the selected dates and prevent the user from selecting
+        // the same date for checkout and checkin
+        if ( this.checkIn !== null &&
+            ( moment(this.checkIn).format('YYYYMMDD') == moment(this.date).format('YYYYMMDD') )
+          ) {
+            return "datepicker__month-day--first-day-selected-background"
+        }
+        if ( this.checkOut !== null && 
+             ( moment(this.checkOut).format('YYYYMMDD') == moment(this.date).format('YYYYMMDD') )
+         ) {
+            return "datepicker__month-day--last-day-selected-background"
+        }
+      }
+    },
     dayClass(){
       if (this.belongsToThisMonth) {
         // If the calendar has a minimum number of nights
@@ -143,18 +157,14 @@ export default {
         // Highlight the selected dates and prevent the user from selecting
         // the same date for checkout and checkin
         if ( this.checkIn !== null &&
-            ( fecha.format(this.checkIn, 'YYYYMMDD') == fecha.format(this.date, 'YYYYMMDD') )
+            ( moment(this.checkIn).format('YYYYMMDD') == moment(this.date).format('YYYYMMDD') )
           ) {
-          if (this.options.minNights == 0) {
             return "datepicker__month-day--first-day-selected"
-          } else {
-            return "datepicker__month-day--disabled datepicker__month-day--first-day-selected"
-          }
         }
-        if ( this.checkOut !== null ) {
-          if ( fecha.format(this.checkOut, 'YYYYMMDD') == fecha.format(this.date, 'YYYYMMDD') ) {
-            return "datepicker__month-day--disabled datepicker__month-day--last-day-selected"
-          }
+        if ( this.checkOut !== null && 
+             ( moment(this.checkOut).format('YYYYMMDD') == moment(this.date).format('YYYYMMDD') )
+         ) {
+            return "datepicker__month-day--last-day-selected"
         }
         // Only highlight dates that are not disabled
         if ( this.isHighlighted && !this.isDisabled) { return " datepicker__month-day--selected"}
@@ -189,13 +199,18 @@ export default {
       } else {
         return
       }
-
     },
     nextDisabledDate() {
       this.disableNextDays();
     },
     checkIn(date) {
       this.createAllowedCheckoutDays(date);
+      this.checkIfDisabled()
+      this.checkIfHighlighted();
+    },
+    checkOut(date) {
+      this.checkIfDisabled()
+      this.checkIfHighlighted();
     }
   },
 
@@ -211,8 +226,8 @@ export default {
     },
 
     compareDay(day1, day2) {
-      const date1 = fecha.format(new Date(day1), 'YYYYMMDD');
-      const date2 = fecha.format(new Date(day2), 'YYYYMMDD');
+      const date1 = moment(new Date(day1)).format('YYYYMMDD');
+      const date2 = moment(new Date(day2)).format('YYYYMMDD');
 
       if (date1 > date2) { return 1; }
 
@@ -261,7 +276,7 @@ export default {
         || this.compareEndDay()
         // Or is in one of the disabled days of the week
         || this.options.disabledDaysOfWeek.some((i) =>
-          i == fecha.format(this.date, 'dddd')
+          i == moment(this.date).format('dddd')
         );
         // Handle checkout enabled
         if ( this.options.enableCheckout ) {

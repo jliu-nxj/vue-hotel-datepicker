@@ -6,20 +6,27 @@
         <h3>US Hotel Picker</h3>
         <DatePicker
           :minNights="0"
-          format="ddd MMMM Do, YYYY"
-          v-on:check-in-changed="onCheckInUpdate($event)"
-          v-on:check-out-changed="onCheckOutUpdate($event)"
+          format="ddd MMMM Do"
+          :showTimePicker="true"
+          @check-in-changed="onCheckInUpdate($event)"
+          @check-out-changed="onCheckOutUpdate($event)"
+          @time-in-change="onTimeInUpdate($event)"
+          @time-out-change="onTimeOutUpdate($event)"
         />
       </div>
-      <div class="box">
+      <!-- <div class="box">
         <h3>UK Hotel Picker</h3>
         <DatePicker
           :minNights="0"
+          :i18n="true"
           format="ddd Do MMMM, YYYY"
-          v-on:check-in-changed="onCheckInUpdate($event)"
-          v-on:check-out-changed="onCheckOutUpdate($event)"
+          :showTimePicker="true"
+          @check-in-change="onCheckInUpdate($event)"
+          @check-out-change="onCheckOutUpdate($event)"
+          @time-in-change="onTimeInUpdate($event)"
+          @time-out-change="onTimeOutUpdate($event)"
         />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -34,16 +41,10 @@
 
     data() {
       return {
-        ptPT: {
-          night: 'Noite',
-          nights: 'Noites',
-          'day-names': ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
-          'check-in': 'Chegada',
-          'check-out': 'Partida',
-          'month-names': ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-        },
         checkIn: null,
         checkOut: null,
+        timeIn: null,
+        timeOut: null,
       };
     },
     methods: {
@@ -52,6 +53,12 @@
       },
       onCheckOutUpdate: function(newDate) {
         this.checkOut = newDate;
+      },
+      onTimeInUpdate: function(newTime) {
+        this.timeIn = newTime;
+      },
+      onTimeOutUpdate: function(newTime) {
+        this.timeOut = newTime;
       }
     }
   };
@@ -61,7 +68,7 @@
 <style>
   body,
   html {
-    font-family: 'Source Sans Pro', sans-serif;
+    font-family: 'MontserratLight', 'SourceSans', Arial, sans-serif;
   }
 
   .box {

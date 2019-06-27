@@ -33,19 +33,20 @@ export default {
       type: Function,
       required: true,
     },
-    showDatepicker: {
-      type: Function,
-      required: true,
-    },
     i18n: {
       type: Object,
       required: true,
     },
+    showTimePicker: {
+      type: Boolean,
+      default: false,
+    }
   },
 
   computed: {
     inputClass() {
       return {
+        'datetimepicker__is-not-expanded': !this.showTimePicker,
         'datepicker__input--is-active': this.isOpen && this.inputDate == null,
         'datepicker__input--single-date': this.singleDaySelection,
       };
@@ -56,3 +57,21 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  .datetimepicker {
+    &__is-not-expanded {
+      margin-bottom: 0px;
+    }
+    @media screen and (max-width: 479px) {
+      &__is-not-expanded {
+        width: 50% !important;
+        border: 1px solid #d7d9e2;
+      }
+      &__is-not-expanded.datepicker__dummy-input--is-active {
+        margin-top: 30px;
+        left: 0 !important;
+      }
+    }
+  }
+</style>

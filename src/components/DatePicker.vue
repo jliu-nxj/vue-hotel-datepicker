@@ -1,27 +1,54 @@
 <template lang='pug'>
-  .datepicker__wrapper(v-if='show' v-on-click-outside='clickOutside' @blur="clickOutside")
-    .datepicker__close-button.-hide-on-desktop(v-if='isOpen' @click='hideDatepicker') ＋
+  .datepicker__wrapper(
+    v-if='show' v-on-click-outside='clickOutside' @blur="clickOutside"
+    :class="`${isOpen ? 'datepicker__wrapper--is-active' : ''}` "
+  )
+    .datepicker__close-button.-hide-on-desktop(v-if='isOpen' @click='hideDatepicker') &plus;
     .datepicker__dummy-wrapper(  :class="`${isOpen ? 'datepicker__dummy-wrapper--is-active' : ''}` ")
       date-input(
         :i18n="formattedi18n"
-        :input-date="formatDate(checkIn)"
+        :input-date="formatDate(checkIn, checkInTime)"
         input-date-type="check-in"
         :is-open="isOpen"
-        :show-datepicker="showDatepicker"
         :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerIn"
         :single-day-selection="singleDaySelection"
+        :showTimePicker="showTimePicker"
       )
       date-input(
         v-if="!singleDaySelection"
         :i18n="formattedi18n"
-        :input-date="formatDate(checkOut)"
+        :input-date="formatDate(checkOut, checkOutTime)"
         input-date-type="check-out"
         :is-open="isOpen"
-        :showDatepicker="showDatepicker"
         :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerOut"
         :single-day-selection="singleDaySelection"
+        :showTimePicker="showTimePicker"
+      )
+    .timeselect__wrapper.hide-desktop-and-tablet(
+      v-if="showTimePicker"
+      :class="timeselectClass"
+    )
+      time-select(
+        defaultText="Pick up"
+        :timeIndex="1"
+        :i18n="i18n"
+        :selectedTime="checkInTime"
+        :timepickerState="timepickerState"
+        @time-change="handleTimeIn($event)"
+      )
+    .timeselect__wrapper.hide-desktop-and-tablet(
+      v-if="showTimePicker"
+      :class="timeselectClass"
+    )
+      time-select(
+        defaultText="Drop off"
+        :timeIndex="2"
+        :i18n="i18n"
+        :selectedTime="checkOutTime"
+        :timepickerState="timepickerState"
+        @time-change="handleTimeOut($event)"
       )
 
     .datepicker( :class='`${ isOpen ? "datepicker--open" : "datepicker--closed" }`')
@@ -32,17 +59,15 @@
         )
           .datepicker__input(
             tabindex="0"
-            :class="`${isOpen && checkIn == null ? 'datepicker__dummy-input--is-active' : ''}`"
+            :class="datepickerDummyWrapperClass"
             v-text="`${checkIn ? formatDate(checkIn) : formattedi18n['check-in']}`"
             type="button"
-            @click='toggleDatepickerIn'
           )
           .datepicker__input(
             tabindex="0"
-            :class="`${isOpen && checkOut == null && checkIn !== null ? 'datepicker__dummy-input--is-active' : ''}`"
+            :class="datepickerDummyWrapperClass"
             v-text="`${checkOut ? formatDate(checkOut) : formattedi18n['check-out']}`"
             type="button"
-            @click='toggleDatepickerOut'
           )
       .datepicker__inner
         .datepicker__header
@@ -78,13 +103,33 @@
                 :checkIn='checkIn'
                 :checkOut='checkOut'
               )
+        .timeselect__wrapper(
+          :class="timeselectClass"
+        )
+          time-select(
+            defaultText="Pick up"
+            :timeIndex="1"
+            :i18n="i18n"
+            :selectedTime="checkInTime"
+            @time-change="handleTimeIn($event)"
+          )
+        .timeselect__wrapper(
+          :class="timeselectClass"
+        )
+          time-select(
+            defaultText="Drop off"
+            :timeIndex="2"
+            :i18n="i18n"
+            :selectedTime="checkOutTime"
+            @time-change="handleTimeOut($event)"
+          )
         div(v-if='screenSize !== "desktop" && isOpen')
           .datepicker__week-row
             .datepicker__week-name(
               v-for='dayName in dayNames'
               v-text='dayName'
             )
-          .datepicker__months#swiperWrapper
+          .datepicker__months#swiperWrapper(@scroll="onScroll")
             div.datepicker__month(
               v-for='(a, n) in months'
               v-bind:key='n'
@@ -114,10 +159,6 @@
                   :checkIn='checkIn'
                   :checkOut='checkOut'
                 )
-            .next--mobile(
-              @click='renderNextMonth' type="button"
-            )
-
 </template>
 
 <script>
@@ -127,6 +168,7 @@
 
   import Day from './Day.vue';
   import DateInput from './DateInput.vue';
+  import TimeSelect from './TimeSelect.vue';
   import Helpers from './helpers.js';
 
   const defaulti18n = {
@@ -139,7 +181,7 @@
   };
 
   export default {
-    name: 'hotel-date-picker',
+    name: 'HotelDatePicker',
 
     directives: {
       'on-click-outside': onClickOutside
@@ -148,6 +190,7 @@
     components: {
       Day,
       DateInput,
+      TimeSelect,
     },
 
     props: {
@@ -168,7 +211,7 @@
       },
       startDate: {
         default: function () {
-          return new Date()
+          return new Date();
         },
         type: [Date, String]
       },
@@ -180,29 +223,21 @@
         default: 0,
         type: Number
       },
-      minNights: {
-        default: 1,
-        type: Number
-      },
-      maxNights: {
-        default: null,
-        type: Number
-      },
       disabledDates: {
         default: function () {
-          return []
+          return [];
         },
         type: Array
       },
       disabledDaysOfWeek: {
         default: function () {
-          return []
+          return [];
         },
         type: Array
       },
       allowedRanges: {
         default: function () {
-          return []
+          return [];
         },
         type: Array
       },
@@ -215,10 +250,6 @@
         type: String
       },
       i18n: {
-        default: 'en',
-        type: String
-      },
-      enableCheckout: {
         default: false,
         type: Boolean
       },
@@ -226,24 +257,14 @@
         default: false,
         type: Boolean
       },
-      showYear: {
-        default: false,
-        type: Boolean
-      },
       closeDatepickerOnClickOutside: {
         default: true,
         type: Boolean,
       },
-      displayClearButton: {
-        default: true,
+      showTimePicker: {
+        default: false,
         type: Boolean,
       },
-      // setAppCheckIn: {
-      //   type: Function
-      // },
-      // setAppCheckOut: {
-      //   type: Function
-      // }
     },
 
     data() {
@@ -253,7 +274,10 @@
         checkOutClicked: false,
         checkIn: this.startingDateValue,
         checkOut: this.endingDateValue,
+        checkInTime: '',
+        checkOutTime: '',
         months: [],
+        preloadedMonthCount: 11,
         activeMonthIndex: 0,
         nextDisabledDate: null,
         show: true,
@@ -264,20 +288,20 @@
         yUp: null,
         sortedDisabledDates: null,
         screenSize: this.handleWindowResize(),
+        nextText: 'Load more months',
+        nextMobileMonthsCount: 5,
+        showMoreMonths: false,
+        timepickerState: false,
       };
     },
 
     computed: {
-      showClearSelectionButton() {
-        return Boolean((this.checkIn || this.checkOut) && this.displayClearButton);
-      },
       dayNames() {
         return moment.weekdaysShort();
       },
       formattedi18n() {
         return {
           ...defaulti18n,
-          locale: this.i18n,
           'day-names': moment.weekdaysShort(),
         };
       },
@@ -285,8 +309,24 @@
         return {
           ...this.$props,
           i18n: this.formattedi18n
+        };
+      },
+      datepickerDummyWrapperClass() {
+        if (this.isOpen) {
+          if (!this.showTimePicker) {
+            return 'datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
+          } else {
+            return 'datepicker__dummy-input--is-active';
+          }
+        } else {
+          return '';
         }
-      }
+      },
+      timeselectClass() {
+        return {
+          'timeselect__wrapper__date-set': this.checkIn || this.checkOut,
+        };
+      },
     },
 
     watch: {
@@ -297,10 +337,10 @@
           if (value) {
             bodyClassList.add('-overflow-hidden');
             setTimeout(() => {
-              let swiperWrapper = document.getElementById('swiperWrapper')
-              let monthHeihgt = document.querySelector('.datepicker__month').offsetHeight
-              swiperWrapper.scrollTop = this.activeMonthIndex * monthHeihgt
-            },100)
+              let swiperWrapper = document.getElementById('swiperWrapper');
+              let monthHeight = document.querySelector('.datepicker__month').offsetHeight;
+              swiperWrapper.scrollTop = this.activeMonthIndex * monthHeight;
+            },100);
           }
           else {
             bodyClassList.remove('-overflow-hidden');
@@ -308,9 +348,7 @@
         }
       },
       checkIn(newDate) {
-        console.log("here")
-        this.$emit("check-in-changed", newDate)
-        // setAppCheckIn(newDate);
+        this.$emit('check-in-changed', newDate);
       },
       checkOut(newDate) {
 
@@ -319,12 +357,9 @@
           this.nextDisabledDate = null;
           this.show = true;
           this.parseDisabledDates();
-          this.reRender()
-          this.isOpen = false;
+          this.reRender();
         }
-        console.log("here")
-        this.$emit("check-out-changed", newDate)
-        // setAppCheckOut(newDate)
+        this.$emit('check-out-changed', newDate);
       },
 
     },
@@ -332,11 +367,30 @@
     methods: {
       ...Helpers,
 
-      formatDate(date) {
-        if (date) {
-          return moment(date).format(this.format);
+      onScroll ({ target: { scrollTop, clientHeight, scrollHeight }}) {
+        if (scrollTop + clientHeight >= scrollHeight) {
+          this.showMoreMonths = true;
+          if (this.activeMonthIndex < this.preloadedMonthCount) {
+            this.activeMonthIndex = this.preloadedMonthCount;
+          }
+        } else {
+          this.showMoreMonths = false;
         }
-        return '';
+      },
+
+      formatDate(date, time) {
+        let dateTime = '';
+        if (date) {
+          dateTime = moment(date).format(this.format);
+        }
+        if (time && this.screenSize === 'desktop') {
+          if (this.i18n) {
+            dateTime = `${dateTime} ${time}`;
+          } else {
+            dateTime = `${dateTime} ${moment(time, 'HH:mm').format('hh:mm A')}`;
+          }
+        }
+        return dateTime;
       },
 
       handleWindowResize() {
@@ -353,77 +407,38 @@
         return this.screenSize;
       },
 
-      onElementHeightChange(el, callback) {
-        let lastHeight = el.clientHeight;
-        let newHeight = lastHeight;
-
-        (function run() {
-          newHeight = el.clientHeight;
-
-          if (lastHeight !== newHeight) {
-            callback();
-          }
-
-          lastHeight = newHeight;
-
-          if (el.onElementHeightChangeTimer) {
-            clearTimeout(el.onElementHeightChangeTimer);
-          }
-
-          el.onElementHeightChangeTimer = setTimeout(run, 1000);
-        })();
-      },
-
-      emitHeighChangeEvent() {
-        this.$emit('height-changed');
-      },
-
       reRender() {
-        this.show = false
+        this.show = false;
         this.$nextTick(() => {
           this.show = true;
-        })
-      },
-
-      clearSelection() {
-        this.hoveringDate = null,
-        this.checkIn = null;
-        this.checkOut = null;
-        this.nextDisabledDate = null;
-        this.show = true;
-        this.parseDisabledDates();
-        this.reRender()
+        });
       },
 
       hideDatepicker() {
         this.isOpen = false;
-      },
-
-      showDatepicker() {
-        this.isOpen = true;
+        this.checkInClicked = false;
+        this.checkOutClicked = false;
       },
 
       toggleDatepickerIn() {
         if (!this.isOpen) {
-          this.isOpen = true
+          this.isOpen = true;
           this.checkInClicked = true;
-        } else {
-          this.isOpen = false;
+          this.timepickerState = false;
         }
       },
 
       toggleDatepickerOut() {
         if (!this.isOpen) {
-          this.isOpen = true
+          this.isOpen = true;
           this.checkOutClicked = true;
-        } else {
-          this.isOpen = false;
+          this.timepickerState = false;
         }
       },
 
       clickOutside() {
         if (this.closeDatepickerOnClickOutside) {
-          this.hideDatepicker()
+          this.hideDatepicker();
         }
       },
 
@@ -447,14 +462,11 @@
           this.checkInClicked = false;
           if (event.date > this.checkOut) {
             this.setCheckOut(null);
-          } else {
-            this.hideDatepicker();
           }
         }
         else if (this.checkIn !== null && this.checkOut !== null && this.checkOutClicked) {
           this.setCheckOut(event.date);
           this.checkOutClicked = false;
-          this.hideDatepicker();
         }
         else {
           if (event.date < this.checkIn) {
@@ -468,17 +480,27 @@
         this.nextDisabledDate = event.nextDisabledDate;
       },
 
+      handleTimeIn(time) {
+        this.checkInTime = time;
+        this.$emit('time-in-change', time);
+      },
+
+      handleTimeOut(time){
+        this.checkOutTime = time;
+        this.$emit('time-out-change', time);
+      },
+
       renderPreviousMonth() {
         if (this.activeMonthIndex >= 1) {
-          this.activeMonthIndex--
+          this.activeMonthIndex--;
         }
-        else return
+        else return;
       },
 
       renderNextMonth: throttle(function throttleRenderNextMonth() {
         if (this.activeMonthIndex < this.months.length - 2) {
           this.activeMonthIndex++;
-          return
+          return;
         }
 
         let firstDayOfLastMonth;
@@ -494,7 +516,7 @@
         if (this.endDate !== Infinity) {
           if (moment(firstDayOfLastMonth[0].date).format('YYYYMM') ==
             moment(new Date(this.endDate)).format('YYYYMM')) {
-            return
+            return;
           }
         }
 
@@ -516,27 +538,26 @@
       },
 
       getDay(date) {
-        return moment(date).format('D')
+        return moment(date).format('D');
       },
 
       getMonth(date) {
-        return moment(date).format('MMMM YYYY') + (this.showYear ? moment(date).format(' YYYY') : '');
+        return moment(date).format('MMMM YYYY');
       },
 
-
-    createMonth(date){
-      const firstDay = this.getFirstDay(date, this.firstDayOfWeek);
+      createMonth(date){
+        const firstDay = this.getFirstDay(date, this.firstDayOfWeek);
         let month = {
           days: []
         };
 
-      for (let i = 0; i < 42; i++) {
-        month.days.push({
-          date: this.addDays(firstDay, i),
-          belongsToThisMonth: this.addDays(firstDay, i).getMonth() === date.getMonth(),
-          isInRange: false,
-        });
-      }
+        for (let i = 0; i < 42; i++) {
+          month.days.push({
+            date: this.addDays(firstDay, i),
+            belongsToThisMonth: this.addDays(firstDay, i).getMonth() === date.getMonth(),
+            isInRange: false,
+          });
+        }
         this.months.push(month);
       },
 
@@ -553,30 +574,29 @@
       }
     },
     beforeMount() {
-      moment.locale(this.i18n);
       if (this.checkIn &&
         (this.getMonthDiff(this.getNextMonth(new Date(this.startDate)), this.checkIn) > 0 ||
         this.getMonthDiff(this.startDate, this.checkIn) > 0)){
         this.createMonth(new Date(this.startDate));
-        const count = this.getMonthDiff(this.startDate, this.checkOut)
-        let nextMonth = new Date(this.startDate)
+        const count = this.getMonthDiff(this.startDate, this.checkOut);
+        let nextMonth = new Date(this.startDate);
         for(let i = 0; i <= count; i++){
-          let tempNextMonth = this.getNextMonth(nextMonth)
-          this.createMonth(tempNextMonth)
-          nextMonth = tempNextMonth
+          let tempNextMonth = this.getNextMonth(nextMonth);
+          this.createMonth(tempNextMonth);
+          nextMonth = tempNextMonth;
         }
         if(this.checkOut && this.getMonthDiff(this.checkIn,this.checkOut) > 0){
-          this.createMonth(this.getNextMonth(nextMonth))
-          this.activeMonthIndex = 1
+          this.createMonth(this.getNextMonth(nextMonth));
+          this.activeMonthIndex = 1;
         }
-        this.activeMonthIndex += count
+        this.activeMonthIndex += count;
       } else{
-        const preloadCount = 12;
-        let nextMonth = new Date(this.startDate)
-        for(let i = 0; i <= preloadCount; i++){
-          let tempNextMonth = this.getNextMonth(nextMonth)
-          this.createMonth(tempNextMonth)
-          nextMonth = tempNextMonth
+        let currentMonth = new Date(this.startDate);
+        this.createMonth(currentMonth);
+        for(let i = 0; i < this.preloadedMonthCount; i++){
+          let tempNextMonth = this.getNextMonth(currentMonth);
+          this.createMonth(tempNextMonth);
+          currentMonth = tempNextMonth;
         }
       }
       this.parseDisabledDates();
@@ -586,10 +606,6 @@
       document.addEventListener('touchstart', this.handleTouchStart, false);
       document.addEventListener('touchmove', this.handleTouchMove, false);
       window.addEventListener('resize', this.handleWindowResize);
-
-      this.onElementHeightChange(document.body, () => {
-        this.emitHeighChangeEvent();
-      });
     },
 
     destroyed() {
@@ -613,11 +629,9 @@
     $medium-gray: #999;
     $light-gray: #d7d9e2;
     $dark-gray: #2d3047;
+    $sky-blue: #bee3f8;
 
     $font-small: 14px;
-
-    // $primary-color: #3182cd;
-    $sky-blue: #bee3f8;
 
     $round-circle: 290486px;
 
@@ -627,6 +641,7 @@
     $tablet: '(min-width: 480px) and (max-width: 767px)';
     $phone: '(max-width: 479px)';
     $desktop: '(min-width: 768px)';
+    $desktop-and-tablet: '(min-width: 480px)';
     $up-to-tablet: '(max-width: 767px)';
     $extra-small-screen: '(max-width: 23em)';
 
@@ -639,7 +654,7 @@
 
     @mixin device($device-widths) {
       @media screen and #{$device-widths} {
-        @content
+        @content;
       }
     }
 
@@ -656,7 +671,7 @@
       *,
       *::before,
       *::after {
-          box-sizing: border-box;
+        box-sizing: border-box;
       }
     }
 
@@ -670,50 +685,19 @@
       color: $gray;
       font-size: 16px;
       line-height: 14px;
-      overflow: hidden;
       left: 0;
       top: 48px;
       position: absolute;
       z-index: 999;
-
-      button.next--mobile {
-        background: none;
-        border: 1px solid $light-gray;
-        float: none;
-        height: 50px;
-        width: 100%;
-        position: relative;
-        background-position: center;
-        appearance: none;
-        overflow: hidden;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        outline: none;
-        box-shadow: 0 5px 30px 10px rgba($black, .08);
-        background: white;
-
-        &:after {
-          background: transparent url('ic-arrow-right.regular.svg') no-repeat center / 8px;
-          transform: rotate(90deg);
-          content: "";
-          position: absolute;
-          width: 200%;
-          height: 200%;
-          top: -50%;
-          left: -50%;
-        }
-      }
-
+      
       &--closed {
         box-shadow: 0 15px 30px 10px rgba($black, 0);
         max-height: 0;
+        overflow: hidden;
       }
-
       &--open {
         box-shadow: 0 15px 30px 10px rgba($black, .08);
         max-height: 900px;
-
         @include device($up-to-tablet) {
           box-shadow: none;
           height: 100%;
@@ -724,434 +708,427 @@
           position: fixed;
           top: 0;
           width: 100%;
+          z-index: 500;
+        }
+        @include device($desktop) {
+          margin-left: -350px;
+          left: 50%;
         }
       }
-
       &__wrapper {
         position: relative;
         display: inline-block;
         width: 100%;
-        // height: 100%;
-        // background: $white url('calendar_icon.regular.svg') no-repeat 17px center / 16px;
-      }
-
-      &__input {
-        background: transparent;
-        height: 48px;
-        color: $primary-text-color;
-        font-size: 12px;
-        outline: none;
-        padding: 4px 30px 2px;
-        width: 100%;
-        word-spacing: 5px;
-        border: 0;
-
-        @include focusStyle();
-
-        &::-webkit-input-placeholder,
-        &::-moz-placeholder,
-        &:-ms-input-placeholder,
-        &:-moz-placeholder {
-          color: $primary-text-color;
+        height: 100%;
+        z-index: 500;
+        &--is-active {
+          z-index: 100000;
         }
       }
-
-        &__dummy-wrapper {
-          border: 1px solid $light-gray;
+      .timeselect__dropdown-menu:first-of-type {
+          z-index: 10000000;
+        }
+      &__dummy {
+        &-input--is-active {
+          z-index: 5000;
+        }
+        &-wrapper {
+          background: $white;
           cursor: pointer;
           display: block;
           float: left;
           width: 100%;
           height: 100%;
-          
           @include device($phone) {
             border: none;
           }
-
           &--no-border.datepicker__dummy-wrapper {
             margin-top: 15px;
             border: 0;
+
+            .datepicker__input {
+              margin-bottom: 0px;
+              width: 50%;
+              @include device($phone) {
+                width: 60%;
+                position: relative;
+                left: 15px;
+                word-spacing: 5px;
+                text-align: center;
+              }
+            }
+          }
+        }
+      }
+      &__input {
+        color: $primary-text-color;
+        padding-top: 0;
+        padding-left: 10px;
+        font-size: $font-small;
+        float: left;
+        height: 46px;
+        line-height: 3.1;
+        text-align: left;
+        text-indent: 5px;
+        width: 50%;
+        word-spacing: 0px;
+        @include device($phone) {
+          text-indent: 0;
+          border: 1px solid $light-gray;
+          width: calc(55% + 4px);
+        }
+        &:first-child {
+          background: transparent url('arrow-right-datepicker.regular.svg') no-repeat right center / 8px;
+          @include device($phone) {
+            background: none;
+          }
+        }
+        &--is-active {
+          color: $primary-color;
+        }
+        &--is-active::placeholder {
+          color: $primary-color;
+        }
+        &--is-active::-moz-placeholder {
+          color: $primary-color;
+        }
+        &--is-active:-ms-input-placeholder {
+          color: $primary-color;
+        }
+        &--is-active:-moz-placeholder {
+          color: $primary-color;
+        }
+        &--single-date:first-child {
+          width: 100%;
+          background: none;
+          text-align: center;
+        }
+      }
+      &__month-day {
+        visibility: visible;
+        text-align: center;
+        margin: 0;
+        border: 0;
+        height: 40px;
+        padding-top: 14px;
+        @include focusStyle();
+        &--invalid-range {
+          background-color: rgba($primary-color, .3);
+          color: $lightest-gray;
+          cursor: not-allowed;
+          position: relative;
+        }
+        &--invalid {
+          color: $lightest-gray;
+          cursor: not-allowed;
+        }
+        &--valid:hover,
+        &--allowed-checkout:hover {
+          background-color: $white;
+          color: $primary-color;
+          z-index: 1;
+          position: relative;
+          box-shadow: 0 0 10px 3px rgba($gray, .4);
+        }
+        &--disabled {
+          opacity: 0.25;
+          cursor: not-allowed;
+          pointer-events: none;
+          position: relative;
+        }
+        &--selected {
+          background-color: $sky-blue;
+          color: $black;
+          &:hover {
+            background-color: $primary-color;
+            color: $white;
+            z-index: 1;
+            position: relative;
+            box-shadow: 0 0 10px 3px rgba($gray, .4);
+          }
+        }
+        &--first-day-selected,
+        &--last-day-selected {
+          background: $primary-color;
+          color: $white;
+          border-radius: $round-circle;
+        }
+        &--first-day-selected-background {
+          background: $sky-blue;
+          color: $white;
+          border-radius: 50px 0px 0px 50px;
+        }
+        &--last-day-selected-background {
+          background: $sky-blue;
+          color: $white;
+          border-radius: 0px 50px 50px 0px;
+        }
+        &--allowed-checkout {
+          color: $medium-gray;
+        }
+        &--out-of-range {
+          color: $black;
+          cursor: not-allowed;
+          position: relative;
+          pointer-events: none;
+        }
+        &--valid {
+          cursor: pointer;
+          color: $medium-gray;
+        }
+        &--hidden {
+          opacity: 0.25;
+          pointer-events: none;
+          color: $white;
+        }
+      }
+      &__month-button {
+        background: transparent url('arrow-right.regular.svg') no-repeat center center / 8px;
+        cursor: pointer;
+        display: inline-block;
+        height: 60px;
+        width: 60px;
+        @include focusStyle();
+        &--prev {
+          transform: rotateY(180deg);
+        }
+        &--next {
+          float: right;
+        }
+        &--locked {
+          opacity: .2;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+      }
+      &__inner {
+        padding: 20px;
+        float: left;
+        @include device($up-to-tablet) {
+          padding: 0;
+          width: 100%;
+        }
+      }
+      &__months {
+        @include device($desktop) {
+          width: 650px;
+        }
+        @include device($up-to-tablet) {
+          margin-top: 92px;
+          height: calc(100% - 92px);
+          position: absolute;
+          left: 0;
+          top: 30px;
+          overflow: scroll;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          &:nth-last-child(1) {
+            padding-bottom: 20px;
+          }
+        }
+        &::before {
+          background: $light-gray;
+          bottom: 0;
+          content: '';
+          display: block;
+          left: 50%;
+          position: absolute;
+          top: 0;
+          width: 1px;
+          @include device($up-to-tablet) {
+            display: none;
+          }
+        }
+      }
+
+      &__month {
+        font-size: 12px;
+        float: left;
+        width: 50%;
+        padding-right: 10px;
+        @include device($up-to-tablet) {
+          width: 100%;
+          padding-right: 0;
+          padding-bottom: 60px;
+          &:first-child {
+            padding-top: 60px;
+          }
+          &:nth-last-child(1) {
+            padding-bottom: 100px;
+          }
+        }
+        @include device($desktop) {
+          &:last-of-type {
+            padding-right: 0;
+            padding-left: 10px;
+          }
+        }
+      }
+      &__month-name {
+        font-size: 16px;
+        font-weight: 500;
+        margin: -40px 0 0 0 !important;
+        padding-bottom: 17px;
+        pointer-events: none;
+        text-align: center;
+        @include device($up-to-tablet) {
+          margin: -25px 0 0 0 !important;
+          position: absolute;
+          width: 100%;
+        }
+      }
+      &__week-days {
+        height: 2em;
+        vertical-align: middle;
+      }
+      &__week-row {
+        border-bottom: 5px solid $white;
+        height: 38px;
+        @include device($up-to-tablet) {
+          box-shadow: 0 13px 18px -8px rgba($black, .07);
+          height: 25px;
+          left: 0;
+          top: 120px;
+          position: absolute;
+          width: 100%;
+          background-color: $white;
+          z-index: 2;
+        }
+      }
+      &__week-name {
+        width: calc(100% / 7);
+        float: left;
+        font-size: 12px;
+        font-weight: 400;
+        color: $medium-gray;
+        text-align: center;
+      }
+      &__close-button {
+        width: 25px;
+        height: 25px;
+        background: $primary-color;
+        border-radius: 50%;
+        color: $white;
+        cursor: pointer;
+        font-size: 21px;
+        font-weight: bold;
+        z-index: 10000;
+        position: fixed;
+        left: 7px;
+        top: 5px;
+        transform: rotate(45deg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      &__tooltip {
+        background-color: $dark-gray;
+        border-radius: 2px;
+        color: $white;
+        font-size: 11px;
+        margin-left: 5px;
+        margin-top: -22px;
+        padding: 5px 10px;
+        position: absolute;
+        z-index: 50;
+        &:after {
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid $dark-gray;
+          bottom: -4px;
+          content: '';
+          left: 50%;
+          margin-left: -4px;
+          position: absolute;
+        }
+      }
+    }
+
+    .timeselect {
+      &__dummy-wrapper {
+        position: absolute;
+        width: 40%;
+        left: 30%;
+        @include device($phone) {
+          left: 45%;
+        }
+        @include device($tablet) {
+          top: 60px;
+          left: 0;
+          width: 100%;
+        }
+      }
+
+      &__wrapper {
+        float: left;
+        width: 50%;
+        margin-top: 10px;
+
+        @include device($phone) {
+          display: inline-block;
+          position: absolute;
+          left: 57%;
+          margin: 0;
+          height: 46px;
+          &:nth-child(even) {
+            top: 15px;
+          }
+          &:nth-child(odd) {
+            top: 61px;
+          }
+        }
+        &.hide-desktop-and-tablet {
+          &:nth-child(even) {
+            top: 0px;
+          }
+          &:nth-child(odd) {
+            top: 46px;
           }
         }
 
-        &__input {
-            color: $primary-text-color;
-            padding-top: 0;
-            font-size: $font-small;
-            float: left;
-            height: 48px;
-            line-height: 3.1;
-            text-align: center;
-            text-indent: 5px;
-            width: calc(50% + 4px);
-
-            @include device($phone) {
-                text-indent: 0;
-                text-align: center;
-                border: 1px solid $light-gray;
-                width: 100%;
-            }
-
-            &:first-child {
-                background: transparent url('ic-arrow-right-datepicker.regular.svg') no-repeat right center / 8px;
-                width: calc(50% - 4px);
-
-                @include device($phone) {
-                  background: none;
-                  width: 100%;
-                }
-            }
-
-            &--is-active {
-                color: $primary-color;
-            }
-            &--is-active::placeholder {
-                color: $primary-color;
-            }
-            &--is-active::-moz-placeholder {
-                color: $primary-color;
-            }
-            &--is-active:-ms-input-placeholder {
-                color: $primary-color;
-            }
-            &--is-active:-moz-placeholder {
-                color: $primary-color;
-            }
-            &--single-date:first-child {
-                width: 100%;
-                background: none;
-                text-align: center;
-            }
+        .timeselect__text {
+          display: table;
+          margin: 3px auto;
+          font-size: 14px;
         }
 
-        &__month-day {
-            visibility: visible;
-            text-align: center;
-            margin: 0;
-            border: 0;
-            height: 40px;
-            padding-top: 14px;
-
-            @include focusStyle();
-
-            &--invalid-range {
-                background-color: rgba($primary-color, .3);
-                color: $lightest-gray;
-                cursor: not-allowed;
-                position: relative;
-            }
-
-            &--invalid {
-                color: $lightest-gray;
-                cursor: not-allowed;
-            }
-
-            &--valid:hover,
-            &--allowed-checkout:hover {
-                background-color: $white;
-                color: $primary-color;
-                z-index: 1;
-                position: relative;
-                box-shadow: 0 0 10px 3px rgba($gray, .4);
-            }
-
-            &--disabled {
-                opacity: 0.25;
-                cursor: not-allowed;
-                pointer-events: none;
-                position: relative;
-            }
-
-            &--selected {
-                background-color: $sky-blue;
-                color: $black;
-
-                &:hover {
-                    background-color: $primary-color;
-                    color: $white;
-                    z-index: 1;
-                    position: relative;
-                    box-shadow: 0 0 10px 3px rgba($gray, .4);
-                }
-            }
-
-            &--first-day-selected,
-            &--last-day-selected {
-                background: $primary-color;
-                color: $white;
-                border-radius: $round-circle;
-            }
-
-            &--first-day-selected-background{
-                background: $sky-blue;
-                color: $white;
-                border-radius: 50px 0px 0px 50px;
-            }
-
-            &--last-day-selected-background {
-                background: $sky-blue;
-                color: $white;
-                border-radius: 0px 50px 50px 0px;
-            }
-
-            &--allowed-checkout {
-                color: $medium-gray;
-            }
-
-            &--out-of-range {
-                color: $black;
-                cursor: not-allowed;
-                position: relative;
-                pointer-events: none;
-            }
-
-            &--valid {
-                cursor: pointer;
-                color: $medium-gray;
-            }
-
-            &--hidden {
-                opacity: 0.25;
-                pointer-events: none;
-                color: $white;
-            }
-        }
-
-        &__month-button {
-            background: transparent url('ic-arrow-right.regular.svg') no-repeat center center / 8px;
-            cursor: pointer;
-            display: inline-block;
-            height: 60px;
-            width: 60px;
-
-            @include focusStyle();
-
-            &--prev {
-                transform: rotateY(180deg);
-            }
-
-            &--next {
-                float: right;
-            }
-
-            &--locked {
-                opacity: .2;
-                cursor: not-allowed;
-                pointer-events: none;
-            }
-        }
-
-        &__inner {
-            padding: 20px;
-            float: left;
-
-            @include device($up-to-tablet) {
-                padding: 0;
-            }
-        }
-
-        &__months {
-            @include device($desktop) {
-                width: 650px;
-            }
-
-            @include device($up-to-tablet) {
-                margin-top: 92px;
-                height: calc(100% - 92px);
-                position: absolute;
-                left: 0;
-                top: 30px;
-                overflow: scroll;
-                right: 0;
-                bottom: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-            }
-
-            &::before {
-                background: $light-gray;
-                bottom: 0;
-                content: '';
-                display: block;
-                left: 50%;
-                position: absolute;
-                top: 0;
-                width: 1px;
-
-                @include device($up-to-tablet) {
-                    display: none;
-                }
-            }
-        }
-
-        &__month {
-            font-size: 12px;
-            float: left;
-            width: 50%;
-            padding-right: 10px;
-
-            @include device($up-to-tablet) {
-                width: 100%;
-                padding-right: 0;
-                padding-top: 60px;
-
-                &:last-of-type {
-                    margin-bottom: 65px;
-                }
-            }
-
-            @include device($desktop) {
-                &:last-of-type {
-                    padding-right: 0;
-                    padding-left: 10px;
-                }
-            }
-        }
-
-        &__month-caption {
-            height: 2.5em;
-            vertical-align: middle;
-        }
-
-        &__month-name {
-            font-size: 16px;
-            font-weight: 500;
-            margin-top: -40px;
-            padding-bottom: 17px;
-            pointer-events: none;
-            text-align: center;
-
-            @include device($up-to-tablet) {
-                margin-top: -25px;
-                margin-bottom: 0;
-                position: absolute;
-                width: 100%;
-            }
-        }
-
-        &__week-days {
-            height: 2em;
-            vertical-align: middle;
-        }
-
-        &__week-row {
-            border-bottom: 5px solid $white;
-            height: 38px;
-
-            @include device($up-to-tablet) {
-                box-shadow: 0 13px 18px -8px rgba($black, .07);
-                height: 25px;
-                left: 0;
-                top: 120px;
-                position: absolute;
-                width: 100%;
-                background-color: white;
-                z-index: 2;
-            }
-        }
-
-        &__week-name {
-            width: calc(100% / 7);
-            float: left;
-            font-size: 12px;
-            font-weight: 400;
-            color: $medium-gray;
-            text-align: center;
-        }
-
-        &__close-button {
-            appearance: none;
-            background: transparent;
-            border: 0;
-            color: $primary-color;
-            cursor: pointer;
-            font-size: 21px;
-            font-weight: bold;
-            margin-top: 0;
-            outline: 0;
-            z-index: 10000;
-            position: fixed;
-            left: 7px;
-            top: 5px;
-            transform: rotate(45deg);
-        }
-
-        &__clear-button {
-            appearance: none;
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-            font-size: 25px;
-            font-weight: bold;
-            height: 40px;
-            margin-bottom: 0;
-            margin-left: 0;
-            margin-right: -2px;
-            margin-top: 4px;
-            padding: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 40px;
-
-            svg {
-              fill: none;
-              stroke-linecap: round;
-              stroke-width: 8px;
-              stroke: $medium-gray;
-              width: 20px;
-              width: 14px;
-              top: -3px;
-              position: relative;
-            }
-
-            @include focusStyle();
-        }
-
-        &__tooltip {
-            background-color: $dark-gray;
-            border-radius: 2px;
-            color: $white;
-            font-size: 11px;
-            margin-left: 5px;
-            margin-top: -22px;
-            padding: 5px 10px;
-            position: absolute;
-            z-index: 50;
-
-            &:after {
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 4px solid $dark-gray;
-                bottom: -4px;
-                content: '';
-                left: 50%;
-                margin-left: -4px;
-                position: absolute;
-            }
-        }
+      }
     }
 
     // Modifiers
 
     .-overflow-hidden {
-        overflow: hidden;
+      overflow: hidden;
     }
 
     .-is-hidden {
-        display: none;
+      display: none;
+    }
+
+    .-hide-up-to-smartphone {
+        @include device($phone) {
+          display: none;
+        }
     }
 
     .-hide-up-to-tablet {
         @include device($up-to-tablet) {
-            display: none;
+          display: none;
         }
     }
 
+    .hide-desktop-and-tablet {
+      @include device($desktop-and-tablet) {
+        display: none;
+      }
+    }
+
     .-hide-on-desktop {
-        @include device($desktop) {
-            display: none;
-        }
+      @include device($desktop) {
+        display: none;
+      }
     }
 </style>

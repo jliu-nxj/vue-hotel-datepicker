@@ -2,7 +2,6 @@ const config = require('./webpack.base.conf')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 const path = require('path')
-const StylelintPlugin = require('stylelint-webpack-plugin')
 
 config.devtool = '#eval-source-map'
 
@@ -34,10 +33,6 @@ config.plugins = (config.plugins || []).concat([
     title: 'BookUp',
     filename: 'index.html',
     template: path.resolve(__dirname, '../src/index.html'),
-  }),
-
-  new StylelintPlugin({
-    files: ['src/**/*.vue']
   }),
 
   new webpack.optimize.OccurrenceOrderPlugin(),

@@ -8,7 +8,6 @@
       date-input(
         :i18n="formattedi18n"
         :input-date="formatDate(checkIn, checkInTime)"
-        input-date-type="check-in"
         :is-open="isOpen"
         :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerIn"
@@ -19,7 +18,6 @@
         v-if="!singleDaySelection"
         :i18n="formattedi18n"
         :input-date="formatDate(checkOut, checkOutTime)"
-        input-date-type="check-out"
         :is-open="isOpen"
         :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerOut"
@@ -60,12 +58,14 @@
           .datepicker__input(
             tabindex="0"
             :class="datepickerDummyWrapperClass"
+            @click="toggleDatepickerIn"
             v-text="`${checkIn ? formatDate(checkIn) : formattedi18n['check-in']}`"
             type="button"
           )
           .datepicker__input(
             tabindex="0"
             :class="datepickerDummyWrapperClass"
+            @click="toggleDatepickerOut"
             v-text="`${checkOut ? formatDate(checkOut) : formattedi18n['check-out']}`"
             type="button"
           )
@@ -107,6 +107,7 @@
           :class="timeselectClass"
         )
           time-select(
+            v-if="showTimePicker"
             defaultText="Pick up"
             :timeIndex="1"
             :i18n="i18n"
@@ -117,6 +118,7 @@
           :class="timeselectClass"
         )
           time-select(
+            v-if="showTimePicker"
             defaultText="Drop off"
             :timeIndex="2"
             :i18n="i18n"
@@ -129,7 +131,7 @@
               v-for='dayName in dayNames'
               v-text='dayName'
             )
-          .datepicker__months#swiperWrapper(@scroll="onScroll")
+          .datepicker__months#swiperWrapper
             div.datepicker__month(
               v-for='(a, n) in months'
               v-bind:key='n'
@@ -174,8 +176,6 @@
   const defaulti18n = {
     night: 'Night',
     nights: 'Nights',
-    'check-in': 'Check-in',
-    'check-out': 'Check-out',
     locale: 'en',
     'day-names': moment.weekdaysShort(),
   };
@@ -204,6 +204,14 @@
       endingDateValue: {
         default: null,
         type: Date
+      },
+      startTimeValue:{
+        default: null,
+        type: String
+      },
+      endTimeValue: {
+        default: null,
+        type: String,
       },
       format: {
         default: 'YYYY-MM-DD',
@@ -265,6 +273,14 @@
         default: false,
         type: Boolean,
       },
+      startString: {
+        type: String,
+        required: true,
+      },
+      endString: {
+        type: String,
+        required: true,
+      }
     },
 
     data() {
@@ -274,8 +290,8 @@
         checkOutClicked: false,
         checkIn: this.startingDateValue,
         checkOut: this.endingDateValue,
-        checkInTime: '',
-        checkOutTime: '',
+        checkInTime: this.startTimeValue,
+        checkOutTime: this.endTimeValue,
         months: [],
         preloadedMonthCount: 11,
         activeMonthIndex: 0,
@@ -289,8 +305,6 @@
         sortedDisabledDates: null,
         screenSize: this.handleWindowResize(),
         nextText: 'Load more months',
-        nextMobileMonthsCount: 5,
-        showMoreMonths: false,
         timepickerState: false,
       };
     },
@@ -302,6 +316,8 @@
       formattedi18n() {
         return {
           ...defaulti18n,
+          'check-in': this.startString,
+          'check-out': this.endString,
           'day-names': moment.weekdaysShort(),
         };
       },
@@ -351,7 +367,6 @@
         this.$emit('check-in-changed', newDate);
       },
       checkOut(newDate) {
-
         if (this.checkOut !== null && this.checkOut !== null) {
           this.hoveringDate = null;
           this.nextDisabledDate = null;
@@ -361,22 +376,10 @@
         }
         this.$emit('check-out-changed', newDate);
       },
-
     },
 
     methods: {
       ...Helpers,
-
-      onScroll ({ target: { scrollTop, clientHeight, scrollHeight }}) {
-        if (scrollTop + clientHeight >= scrollHeight) {
-          this.showMoreMonths = true;
-          if (this.activeMonthIndex < this.preloadedMonthCount) {
-            this.activeMonthIndex = this.preloadedMonthCount;
-          }
-        } else {
-          this.showMoreMonths = false;
-        }
-      },
 
       formatDate(date, time) {
         let dateTime = '';
@@ -421,17 +424,19 @@
       },
 
       toggleDatepickerIn() {
+        this.checkInClicked = true;
+        this.checkOutClicked = false;
         if (!this.isOpen) {
           this.isOpen = true;
-          this.checkInClicked = true;
           this.timepickerState = false;
         }
       },
 
       toggleDatepickerOut() {
+        this.checkInClicked = false;
+        this.checkOutClicked = true;
         if (!this.isOpen) {
           this.isOpen = true;
-          this.checkOutClicked = true;
           this.timepickerState = false;
         }
       },
@@ -531,6 +536,7 @@
 
       setCheckIn(date) {
         this.checkIn = date;
+        this.activeMonthIndex = date.getMonth() - this.startDate.getMonth();
       },
 
       setCheckOut(date) {
@@ -550,7 +556,6 @@
         let month = {
           days: []
         };
-
         for (let i = 0; i < 42; i++) {
           month.days.push({
             date: this.addDays(firstDay, i),
@@ -574,31 +579,15 @@
       }
     },
     beforeMount() {
-      if (this.checkIn &&
-        (this.getMonthDiff(this.getNextMonth(new Date(this.startDate)), this.checkIn) > 0 ||
-        this.getMonthDiff(this.startDate, this.checkIn) > 0)){
-        this.createMonth(new Date(this.startDate));
-        const count = this.getMonthDiff(this.startDate, this.checkOut);
-        let nextMonth = new Date(this.startDate);
-        for(let i = 0; i <= count; i++){
-          let tempNextMonth = this.getNextMonth(nextMonth);
-          this.createMonth(tempNextMonth);
-          nextMonth = tempNextMonth;
-        }
-        if(this.checkOut && this.getMonthDiff(this.checkIn,this.checkOut) > 0){
-          this.createMonth(this.getNextMonth(nextMonth));
-          this.activeMonthIndex = 1;
-        }
-        this.activeMonthIndex += count;
-      } else{
-        let currentMonth = new Date(this.startDate);
-        this.createMonth(currentMonth);
-        for(let i = 0; i < this.preloadedMonthCount; i++){
-          let tempNextMonth = this.getNextMonth(currentMonth);
-          this.createMonth(tempNextMonth);
-          currentMonth = tempNextMonth;
-        }
+      let currentMonth = new Date(this.startDate);
+      this.createMonth(currentMonth);
+      for(let i = 0; i < this.preloadedMonthCount; i++){
+        let tempNextMonth = this.getNextMonth(currentMonth);
+        this.createMonth(tempNextMonth);
+        currentMonth = tempNextMonth;
       }
+      this.activeMonthIndex = this.checkIn.getMonth() - this.startDate.getMonth();
+      if (this.activeMonthIndex < 0) this.activeMonthIndex = 0;
       this.parseDisabledDates();
     },
 
@@ -689,6 +678,7 @@
       top: 48px;
       position: absolute;
       z-index: 999;
+      font-family: 'MontserratLight', 'SourceSans', Arial, sans-serif;
       
       &--closed {
         box-shadow: 0 15px 30px 10px rgba($black, 0);
@@ -722,7 +712,7 @@
         height: 100%;
         z-index: 500;
         &--is-active {
-          z-index: 100000;
+          z-index: 10000000;
         }
       }
       .timeselect__dropdown-menu:first-of-type {
@@ -739,6 +729,7 @@
           float: left;
           width: 100%;
           height: 100%;
+          border: 1px solid #e5e5e5;
           @include device($phone) {
             border: none;
           }
@@ -749,12 +740,17 @@
             .datepicker__input {
               margin-bottom: 0px;
               width: 50%;
+              @include device($tablet) {
+                text-align: center;
+              }
               @include device($phone) {
                 width: 60%;
                 position: relative;
                 left: 15px;
                 word-spacing: 5px;
                 text-align: center;
+                height: 46px;
+                padding-top: 15px;
               }
             }
           }
@@ -762,23 +758,24 @@
       }
       &__input {
         color: $primary-text-color;
-        padding-top: 0;
         padding-left: 10px;
-        font-size: $font-small;
+        font-size: inherit;
         float: left;
-        height: 46px;
-        line-height: 3.1;
+        line-height: inherit;
         text-align: left;
         text-indent: 5px;
         width: 50%;
         word-spacing: 0px;
+        height: 100%;
+
         @include device($phone) {
           text-indent: 0;
           border: 1px solid $light-gray;
           width: calc(55% + 4px);
         }
-        &:first-child {
-          background: transparent url('arrow-right-datepicker.regular.svg') no-repeat right center / 8px;
+
+        &:last-child {
+          background: transparent url('arrow-right-datepicker.regular.svg') no-repeat left center / 8px;
           @include device($phone) {
             background: none;
           }
@@ -1085,7 +1082,7 @@
             top: 0px;
           }
           &:nth-child(odd) {
-            top: 46px;
+            top: 50%;
           }
         }
 

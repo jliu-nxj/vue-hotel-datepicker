@@ -292,6 +292,8 @@ export default {
         this.isDateLessOrEquals(this.checkIn, this.date) &&
         this.isDateLessOrEquals(this.date, this.checkOut) ?
           this.isHighlighted = true : this.isHighlighted = false;
+      } else {
+        this.isHighlighted = false;
       }
     },
 

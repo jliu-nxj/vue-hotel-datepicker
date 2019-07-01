@@ -9,7 +9,7 @@
       aria-controls="dropdown-menu3"
     )
       span(
-        v-text="selectedTime !== '' ? selectedTime : defaultText"
+        v-text="currentTime"
       )
   .dropdown-menu.timeselect__dropdown-menu(
     id="dropdown-menu3"
@@ -57,7 +57,6 @@ export default {
   },
   data() {
     return {
-      currentTime: this.selectedTime,
       isOpen: false,
       militaryTimes: [
         '00:00',
@@ -178,17 +177,25 @@ export default {
             text: time
           }
         ));
+      } else {
+        return this.militaryTimes.map((time, index) => (
+          {
+            value: time,
+            text: this.twelveHourTimes[index]
+          }
+        ));
       }
-      return this.militaryTimes.map((time, index) => (
-        {
-          value: time,
-          text: this.twelveHourTimes[index]
-        }
-      ));
     },
     dropDownMenuStyle() {
       let zIndex = 100 - this.timeIndex;
       return `z-index: ${zIndex}`;
+    },
+    currentTime() {
+      if (this.selectedTime !== '') {
+        return this.timePairs[this.timePairs.findIndex(time => time.value === this.selectedTime)].text;
+      } else {
+        return this.defaultText;
+      }
     },
   },
 };

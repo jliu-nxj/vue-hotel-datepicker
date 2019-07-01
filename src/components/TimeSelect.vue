@@ -205,29 +205,34 @@ export default {
   @import './../../node_modules/bulma/sass/utilities/_all.sass';
   @import './../../node_modules/bulma/sass/components/dropdown.sass';
   @import './../../node_modules/bulma/sass/elements/button.sass';
+
   .dropdown {
     display: table;
+    height: 100%;
     margin: 0 auto;
     width: 70%;
-    height: 100%;
+
     &-trigger {
       height: 100%;
     }
+
     &__button {
-      width: 100%;
-      height: 100%;
       font-size: 14px;
+      height: 100%;
+      width: 100%;
     }
+
     &-content {
       max-height: 13em;
       overflow: auto;
     }
   }
+
   .timeselect {
     &__dropdown-menu {
       min-width: 0;
+      padding: 0;
       width: 100%;
-      padding: 0
     }
   }
 </style>

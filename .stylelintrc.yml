@@ -1,9 +1,15 @@
 processors:
   - '@mapbox/stylelint-processor-arbitrary-tags'
-extends: stylelint-config-standard
+extends: 
+  - 'stylelint-config-standard'
 plugins:
   - stylelint-scss
+  - stylelint-order
 rules:
   no-empty-source: null
   at-rule-no-unknown: null
   scss/at-rule-no-unknown: true
+  order/order:
+    - 'custom-properties'
+    - 'declarations'
+  order/properties-alphabetical-order: true

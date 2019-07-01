@@ -648,19 +648,11 @@
     }
 
     .square {
-      width: calc(100% / 7);
       float: left;
+      width: calc(100% / 7);
 
       @include device($desktop) {
         cursor: pointer;
-      }
-    }
-
-    .datepicker__wrapper {
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
       }
     }
 
@@ -669,263 +661,315 @@
      * ============================================================ */
 
     .datepicker {
-      transition: all 0.2s ease-in-out;
       background-color: $white;
       color: $gray;
-      font-size: 16px;
-      line-height: 14px;
-      left: 0;
-      top: 48px;
-      position: absolute;
-      z-index: 999;
       font-family: 'MontserratLight', 'SourceSans', Arial, sans-serif;
-      
+      font-size: 16px;
+      left: 0;
+      line-height: 14px;
+      position: absolute;
+      top: 48px;
+      transition: all 0.2s ease-in-out;
+      z-index: 999;
+
       &--closed {
         box-shadow: 0 15px 30px 10px rgba($black, 0);
         max-height: 0;
         overflow: hidden;
       }
+
       &--open {
-        box-shadow: 0 15px 30px 10px rgba($black, .08);
+        box-shadow: 0 15px 30px 10px rgba($black, 0.08);
         max-height: 900px;
+
         @include device($up-to-tablet) {
+          bottom: 0;
           box-shadow: none;
           height: 100%;
           left: 0;
-          right: 0;
-          bottom: 0;
           -webkit-overflow-scrolling: touch !important;
           position: fixed;
+          right: 0;
           top: 0;
           width: 100%;
           z-index: 500;
         }
+
         @include device($desktop) {
-          margin-left: -350px;
           left: 50%;
+          margin-left: -350px;
         }
       }
+
       &__wrapper {
-        position: relative;
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+        }
+
         display: inline-block;
-        width: 100%;
         height: 100%;
+        position: relative;
+        width: 100%;
         z-index: 500;
+
         &--is-active {
           z-index: 10000000;
         }
       }
-      .timeselect__dropdown-menu:first-of-type {
-          z-index: 10000000;
-        }
-      &__dummy {
-        &-input--is-active {
-          z-index: 5000;
-        }
-        &-wrapper {
-          background: $white;
-          cursor: pointer;
-          display: block;
-          float: left;
-          width: 100%;
-          height: 100%;
-          border: 1px solid #e5e5e5;
-          @include device($phone) {
-            border: none;
-          }
-          &--no-border.datepicker__dummy-wrapper {
-            margin-top: 15px;
-            border: 0;
 
-            .datepicker__input {
-              margin-bottom: 0px;
-              width: 50%;
-              @include device($tablet) {
-                text-align: center;
-              }
-              @include device($phone) {
-                width: 60%;
-                position: relative;
-                left: 15px;
-                word-spacing: 5px;
-                text-align: center;
-                height: 46px;
-                padding-top: 15px;
-              }
-            }
-          }
-        }
+      .timeselect__dropdown-menu:first-of-type {
+        z-index: 10000000;
       }
+
       &__input {
         color: $primary-text-color;
-        padding-left: 10px;
-        font-size: inherit;
         float: left;
+        font-size: inherit;
+        height: 100%;
         line-height: inherit;
+        padding-left: 10px;
         text-align: left;
         text-indent: 5px;
         width: 50%;
-        word-spacing: 0px;
-        height: 100%;
+        word-spacing: 0;
 
         @include device($phone) {
-          text-indent: 0;
           border: 1px solid $light-gray;
+          text-indent: 0;
           width: calc(55% + 4px);
         }
 
         &:last-child {
           background: transparent url('arrow-right-datepicker.regular.svg') no-repeat left center / 8px;
+
           @include device($phone) {
             background: none;
           }
         }
+
         &--is-active {
           color: $primary-color;
         }
+
         &--is-active::placeholder {
           color: $primary-color;
         }
+
         &--is-active::-moz-placeholder {
           color: $primary-color;
         }
+
         &--is-active:-ms-input-placeholder {
           color: $primary-color;
         }
+
         &--is-active:-moz-placeholder {
           color: $primary-color;
         }
+
         &--single-date:first-child {
-          width: 100%;
           background: none;
           text-align: center;
+          width: 100%;
         }
       }
+
+      &__dummy {
+        &-input--is-active {
+          z-index: 5000;
+        }
+
+        &-wrapper {
+          background: $white;
+          border: 1px solid #e5e5e5;
+          cursor: pointer;
+          display: block;
+          float: left;
+          height: 100%;
+          width: 100%;
+
+          @include device($phone) {
+            border: 0;
+          }
+
+          &--no-border.datepicker__dummy-wrapper {
+            border: 0;
+            margin-top: 15px;
+
+            .datepicker__input {
+              margin-bottom: 0;
+              width: 50%;
+
+              @include device($phone) {
+                height: 46px;
+                left: 15px;
+                padding-top: 15px;
+                position: relative;
+                text-align: center;
+                width: 60%;
+                word-spacing: 5px;
+              }
+
+              @include device($tablet) {
+                text-align: center;
+              }
+            }
+          }
+        }
+      }
+
       &__month-day {
-        visibility: visible;
-        text-align: center;
-        margin: 0;
         border: 0;
         height: 40px;
+        margin: 0;
         padding-top: 14px;
+        text-align: center;
+        visibility: visible;
+
         @include focusStyle();
+
         &--invalid-range {
-          background-color: rgba($primary-color, .3);
+          background-color: rgba($primary-color, 0.3);
           color: $lightest-gray;
           cursor: not-allowed;
           position: relative;
         }
+
         &--invalid {
           color: $lightest-gray;
           cursor: not-allowed;
         }
-        &--valid:hover,
-        &--allowed-checkout:hover {
-          background-color: $white;
-          color: $primary-color;
-          z-index: 1;
-          position: relative;
-          box-shadow: 0 0 10px 3px rgba($gray, .4);
+
+        &--valid {
+          color: $medium-gray;
+          cursor: pointer;
         }
-        &--disabled {
-          opacity: 0.25;
-          cursor: not-allowed;
-          pointer-events: none;
-          position: relative;
-        }
-        &--selected {
-          background-color: $sky-blue;
-          color: $black;
-          &:hover {
-            background-color: $primary-color;
-            color: $white;
-            z-index: 1;
-            position: relative;
-            box-shadow: 0 0 10px 3px rgba($gray, .4);
-          }
-        }
-        &--first-day-selected,
-        &--last-day-selected {
-          background: $primary-color;
-          color: $white;
-          border-radius: $round-circle;
-        }
-        &--first-day-selected-background {
-          background: $sky-blue;
-          color: $white;
-          border-radius: 50px 0px 0px 50px;
-        }
-        &--last-day-selected-background {
-          background: $sky-blue;
-          color: $white;
-          border-radius: 0px 50px 50px 0px;
-        }
+
         &--allowed-checkout {
           color: $medium-gray;
         }
+
+        &--valid:hover,
+        &--allowed-checkout:hover {
+          background-color: $white;
+          box-shadow: 0 0 10px 3px rgba($gray, 0.4);
+          color: $primary-color;
+          position: relative;
+          z-index: 1;
+        }
+
+        &--disabled {
+          cursor: not-allowed;
+          opacity: 0.25;
+          pointer-events: none;
+          position: relative;
+        }
+
+        &--selected {
+          background-color: $sky-blue;
+          color: $black;
+
+          &:hover {
+            background-color: $primary-color;
+            box-shadow: 0 0 10px 3px rgba($gray, 0.4);
+            color: $white;
+            position: relative;
+            z-index: 1;
+          }
+        }
+
+        &--first-day-selected,
+        &--last-day-selected {
+          background: $primary-color;
+          border-radius: $round-circle;
+          color: $white;
+        }
+
+        &--first-day-selected-background {
+          background: $sky-blue;
+          border-radius: 50px 0 0 50px;
+          color: $white;
+        }
+
+        &--last-day-selected-background {
+          background: $sky-blue;
+          border-radius: 0 50px 50px 0;
+          color: $white;
+        }
+
         &--out-of-range {
           color: $black;
           cursor: not-allowed;
-          position: relative;
           pointer-events: none;
+          position: relative;
         }
-        &--valid {
-          cursor: pointer;
-          color: $medium-gray;
-        }
+
         &--hidden {
+          color: $white;
           opacity: 0.25;
           pointer-events: none;
-          color: $white;
         }
       }
+
       &__month-button {
         background: transparent url('arrow-right.regular.svg') no-repeat center center / 8px;
         cursor: pointer;
         display: inline-block;
         height: 60px;
         width: 60px;
+
         @include focusStyle();
+
         &--prev {
           transform: rotateY(180deg);
         }
+
         &--next {
           float: right;
         }
+
         &--locked {
-          opacity: .2;
           cursor: not-allowed;
+          opacity: 0.2;
           pointer-events: none;
         }
       }
+
       &__inner {
-        padding: 20px;
         float: left;
+        padding: 20px;
+
         @include device($up-to-tablet) {
           padding: 0;
           width: 100%;
         }
       }
+
       &__months {
         @include device($desktop) {
           width: 650px;
         }
+
         @include device($up-to-tablet) {
-          margin-top: 92px;
-          height: calc(100% - 92px);
-          position: absolute;
-          left: 0;
-          top: 30px;
-          overflow: scroll;
-          right: 0;
           bottom: 0;
           display: flex;
           flex-direction: column;
+          height: calc(100% - 92px);
           justify-content: flex-start;
+          left: 0;
+          margin-top: 92px;
+          overflow: scroll;
+          position: absolute;
+          right: 0;
+          top: 30px;
+
           &:nth-last-child(1) {
             padding-bottom: 20px;
           }
         }
+
         &::before {
           background: $light-gray;
           bottom: 0;
@@ -935,6 +979,7 @@
           position: absolute;
           top: 0;
           width: 1px;
+
           @include device($up-to-tablet) {
             display: none;
           }
@@ -942,28 +987,33 @@
       }
 
       &__month {
-        font-size: 12px;
         float: left;
-        width: 50%;
+        font-size: 12px;
         padding-right: 10px;
+        width: 50%;
+
         @include device($up-to-tablet) {
-          width: 100%;
-          padding-right: 0;
           padding-bottom: 60px;
+          padding-right: 0;
+          width: 100%;
+
           &:first-child {
             padding-top: 60px;
           }
+
           &:nth-last-child(1) {
             padding-bottom: 100px;
           }
         }
+
         @include device($desktop) {
           &:last-of-type {
-            padding-right: 0;
             padding-left: 10px;
+            padding-right: 0;
           }
         }
       }
+
       &__month-name {
         font-size: 16px;
         font-weight: 500;
@@ -971,56 +1021,63 @@
         padding-bottom: 17px;
         pointer-events: none;
         text-align: center;
+
         @include device($up-to-tablet) {
           margin: -25px 0 0 0 !important;
           position: absolute;
           width: 100%;
         }
       }
+
       &__week-days {
         height: 2em;
         vertical-align: middle;
       }
+
       &__week-row {
         border-bottom: 5px solid $white;
         height: 38px;
+
         @include device($up-to-tablet) {
-          box-shadow: 0 13px 18px -8px rgba($black, .07);
+          background-color: $white;
+          box-shadow: 0 13px 18px -8px rgba($black, 0.07);
           height: 25px;
           left: 0;
-          top: 120px;
           position: absolute;
+          top: 120px;
           width: 100%;
-          background-color: $white;
           z-index: 2;
         }
       }
+
       &__week-name {
-        width: calc(100% / 7);
+        color: $medium-gray;
         float: left;
         font-size: 12px;
         font-weight: 400;
-        color: $medium-gray;
         text-align: center;
+        width: calc(100% / 7);
       }
+
       &__close-button {
-        width: 25px;
-        height: 25px;
+        align-items: center;
         background: $primary-color;
         border-radius: 50%;
         color: $white;
         cursor: pointer;
+        display: flex;
         font-size: 21px;
         font-weight: bold;
-        z-index: 10000;
-        position: fixed;
+        height: 25px;
+        justify-content: center;
         left: 7px;
+        position: fixed;
         top: 5px;
         transform: rotate(45deg);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        width: 25px;
+        z-index: 10000;
       }
+
       &__tooltip {
         background-color: $dark-gray;
         border-radius: 2px;
@@ -1031,7 +1088,8 @@
         padding: 5px 10px;
         position: absolute;
         z-index: 50;
-        &:after {
+
+        &::after {
           border-left: 4px solid transparent;
           border-right: 4px solid transparent;
           border-top: 4px solid $dark-gray;
@@ -1046,41 +1104,47 @@
 
     .timeselect {
       &__dummy-wrapper {
+        left: 30%;
         position: absolute;
         width: 40%;
-        left: 30%;
+
         @include device($phone) {
           left: 45%;
         }
+
         @include device($tablet) {
-          top: 60px;
           left: 0;
+          top: 60px;
           width: 100%;
         }
       }
 
       &__wrapper {
         float: left;
-        width: 50%;
         margin-top: 10px;
+        width: 50%;
 
         @include device($phone) {
           display: inline-block;
-          position: absolute;
+          height: 46px;
           left: 57%;
           margin: 0;
-          height: 46px;
+          position: absolute;
+
           &:nth-child(even) {
             top: 15px;
           }
+
           &:nth-child(odd) {
             top: 61px;
           }
         }
+
         &.hide-desktop-and-tablet {
           &:nth-child(even) {
-            top: 0px;
+            top: x;
           }
+
           &:nth-child(odd) {
             top: 50%;
           }
@@ -1088,10 +1152,9 @@
 
         .timeselect__text {
           display: table;
-          margin: 3px auto;
           font-size: 14px;
+          margin: 3px auto;
         }
-
       }
     }
 
@@ -1106,15 +1169,15 @@
     }
 
     .-hide-up-to-smartphone {
-        @include device($phone) {
-          display: none;
-        }
+      @include device($phone) {
+        display: none;
+      }
     }
 
     .-hide-up-to-tablet {
-        @include device($up-to-tablet) {
-          display: none;
-        }
+      @include device($up-to-tablet) {
+        display: none;
+      }
     }
 
     .hide-desktop-and-tablet {

@@ -61,16 +61,18 @@ export default {
 <style lang="scss">
   .datetimepicker {
     &__is-not-expanded {
-      margin-bottom: 0px;
+      margin-bottom: 0;
     }
+
     @media screen and (max-width: 479px) {
       &__is-not-expanded {
-        width: 50% !important;
         border: 1px solid #d7d9e2;
+        width: 50% !important;
       }
+
       &__is-not-expanded.datepicker__dummy-input--is-active {
-        margin-top: 30px;
         left: 0 !important;
+        margin-top: 30px;
       }
     }
   }

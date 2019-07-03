@@ -527,7 +527,7 @@
 
         if (this.lastSelectableDate !== Infinity) {
           if (moment(firstDayOfLastMonth[0].date).format('YYYYMM') ==
-            moment(new Date(this.lastSelectableDate)).format('YYYYMM')) {
+            moment(moment(this.lastSelectableDate).toDate()).format('YYYYMM')) {
             return;
           }
         }
@@ -577,7 +577,7 @@
         const sortedDates = [];
 
         for (let i = 0; i < this.disabledDates.length; i++) {
-          sortedDates[i] = new Date(this.disabledDates[i]);
+          sortedDates[i] = moment(this.disabledDates[i]).toDate();
         }
 
         sortedDates.sort((a, b) => a - b);

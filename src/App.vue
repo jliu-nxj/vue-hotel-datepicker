@@ -8,25 +8,18 @@
           :minNights="0"
           format="ddd MMMM Do"
           :showTimePicker="true"
+          startTimeValue="00:00"
+          endTimeValue="00:00"
+          start-string="Check-in"
+          end-string="Check-out"
+          :disabledDates="['2019-07-04', '2019-07-06']"
+          :disabledDaysOfWeek="['Monday']"
           @check-in-changed="onCheckInUpdate($event)"
           @check-out-changed="onCheckOutUpdate($event)"
           @time-in-change="onTimeInUpdate($event)"
           @time-out-change="onTimeOutUpdate($event)"
         />
       </div>
-      <!-- <div class="box">
-        <h3>UK Hotel Picker</h3>
-        <DatePicker
-          :minNights="0"
-          :i18n="true"
-          format="ddd Do MMMM, YYYY"
-          :showTimePicker="true"
-          @check-in-change="onCheckInUpdate($event)"
-          @check-out-change="onCheckOutUpdate($event)"
-          @time-in-change="onTimeInUpdate($event)"
-          @time-out-change="onTimeOutUpdate($event)"
-        />
-      </div> -->
     </div>
   </div>
 </template>

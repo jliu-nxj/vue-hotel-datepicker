@@ -24,12 +24,12 @@ describe('Datepicker Day', () => {
           allowedRanges: [],
           disabledDates: [],
           disabledDaysOfWeek: [],
-          endDate:'2017-12-30T23:00:00.000Z',
+          lastSelectableDate:'2017-12-30T23:00:00.000Z',
           format:'YYYY-MM-DD',
           hoveringTooltip:true,
           maxNights:null,
           minNights:3,
-          startDate:'2017-10-05T15:16:50.281Z',
+          firstSelectableDate:'2017-10-05T15:16:50.281Z',
           value:undefined
         }
       }

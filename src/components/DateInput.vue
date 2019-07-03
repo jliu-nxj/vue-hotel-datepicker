@@ -40,7 +40,7 @@ export default {
     showTimePicker: {
       type: Boolean,
       default: false,
-    }
+    },
   },
 
   computed: {
@@ -67,12 +67,12 @@ export default {
     @media screen and (max-width: 479px) {
       &__is-not-expanded {
         border: 1px solid #d7d9e2;
-        width: 50% !important;
+        width: 50%;
       }
 
       &__is-not-expanded.datepicker__dummy-input--is-active {
         left: 0 !important;
-        margin-top: 30px;
+        width: 100% !important;
       }
     }
   }

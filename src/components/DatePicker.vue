@@ -18,6 +18,7 @@
         v-if="!singleDaySelection"
         :i18n="formattedi18n"
         :input-date="formatDate(checkOut, checkOutTime)"
+        input-date-type="check-out"
         :is-open="isOpen"
         :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerOut"
@@ -33,7 +34,6 @@
         :timeIndex="1"
         :i18n="i18n"
         :selectedTime="checkInTime"
-        :timepickerState="timepickerState"
         @time-change="handleTimeIn($event)"
       )
     .timeselect__wrapper.hide-desktop-and-tablet(
@@ -45,7 +45,6 @@
         :timeIndex="2"
         :i18n="i18n"
         :selectedTime="checkOutTime"
-        :timepickerState="timepickerState"
         @time-change="handleTimeOut($event)"
       )
 
@@ -60,9 +59,11 @@
             :class="datepickerDummyWrapperClass"
             @click="toggleDatepickerIn"
             v-text="`${checkIn ? formatDate(checkIn) : formattedi18n['check-in']}`"
+            :single-day-selection="singleDaySelection"
             type="button"
           )
           .datepicker__input(
+            v-if="!singleDaySelection"
             tabindex="0"
             :class="datepickerDummyWrapperClass"
             @click="toggleDatepickerOut"
@@ -101,7 +102,8 @@
                 :dayNumber='getDay(day.date)'
                 :belongsToThisMonth='day.belongsToThisMonth'
                 :checkIn='checkIn'
-                :checkOut='checkOut'
+                :checkOut='!singleDaySelection ? checkOut : null'
+                :singleDaySelection='singleDaySelection'
               )
         .timeselect__wrapper(
           :class="timeselectClass"
@@ -159,7 +161,8 @@
                   :dayNumber='getDay(day.date)'
                   :belongsToThisMonth='day.belongsToThisMonth'
                   :checkIn='checkIn'
-                  :checkOut='checkOut'
+                  :checkOut='!singleDaySelection ? checkOut : null'
+                  :singleDaySelection='singleDaySelection'
                 )
 </template>
 
@@ -194,17 +197,6 @@
     },
 
     props: {
-      value: {
-        type: String
-      },
-      startingDateValue: {
-        default: null,
-        type: Date
-      },
-      endingDateValue: {
-        default: null,
-        type: Date
-      },
       startTimeValue:{
         default: null,
         type: String
@@ -217,18 +209,34 @@
         default: 'YYYY-MM-DD',
         type: String
       },
-      startDate: {
+      firstSelectableDate: {
         default: function () {
           return new Date();
         },
-        type: [Date, String]
+        type: Date
       },
-      endDate: {
+      startingDateValue: {
+        default: null,
+        type: Date
+      },
+      lastSelectableDate: {
         default: Infinity,
         type: [Date, String, Number]
       },
+      endingDateValue: {
+        default: null,
+        type: Date
+      },
       firstDayOfWeek: {
         default: 0,
+        type: Number
+      },
+      minNights: {
+        default: 0,
+        type: Number
+      },
+      maxNights: {
+        default: null,
         type: Number
       },
       disabledDates: {
@@ -257,10 +265,6 @@
         default: null,
         type: String
       },
-      i18n: {
-        default: false,
-        type: Boolean
-      },
       singleDaySelection: {
         default: false,
         type: Boolean
@@ -268,6 +272,10 @@
       closeDatepickerOnClickOutside: {
         default: true,
         type: Boolean,
+      },
+      i18n: {
+        default: false,
+        type: Boolean
       },
       showTimePicker: {
         default: false,
@@ -280,16 +288,17 @@
       endString: {
         type: String,
         required: true,
-      }
+      },
     },
 
     data() {
+      const checkOutDate = this.singleDaySelection ? this.startingDateValue : this.endingDateValue;
       return {
         hoveringDate: null,
         checkInClicked: false,
         checkOutClicked: false,
         checkIn: this.startingDateValue,
-        checkOut: this.endingDateValue,
+        checkOut: checkOutDate,
         checkInTime: this.startTimeValue,
         checkOutTime: this.endTimeValue,
         months: [],
@@ -304,8 +313,6 @@
         yUp: null,
         sortedDisabledDates: null,
         screenSize: this.handleWindowResize(),
-        nextText: 'Load more months',
-        timepickerState: false,
       };
     },
 
@@ -329,8 +336,8 @@
       },
       datepickerDummyWrapperClass() {
         if (this.isOpen) {
-          if (!this.showTimePicker) {
-            return 'datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
+          if (!this.showTimePicker || this.singleDaySelection) {
+            return 'datepicker__input--single-date datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
           } else {
             return 'datepicker__dummy-input--is-active';
           }
@@ -376,6 +383,12 @@
         }
         this.$emit('check-out-changed', newDate);
       },
+      startingDateValue() {
+        this.checkIn = this.startingDateValue;
+        if (this.singleDaySelection) {
+          this.checkOut = this.startingDateValue;
+        }
+      }
     },
 
     methods: {
@@ -426,19 +439,13 @@
       toggleDatepickerIn() {
         this.checkInClicked = true;
         this.checkOutClicked = false;
-        if (!this.isOpen) {
-          this.isOpen = true;
-          this.timepickerState = false;
-        }
+        this.isOpen = true;
       },
 
       toggleDatepickerOut() {
         this.checkInClicked = false;
         this.checkOutClicked = true;
-        if (!this.isOpen) {
-          this.isOpen = true;
-          this.timepickerState = false;
-        }
+        this.isOpen = true;
       },
 
       clickOutside() {
@@ -487,12 +494,12 @@
 
       handleTimeIn(time) {
         this.checkInTime = time;
-        this.$emit('time-in-change', time);
+        this.$emit('time-in-changed', time);
       },
 
       handleTimeOut(time){
         this.checkOutTime = time;
-        this.$emit('time-out-change', time);
+        this.$emit('time-out-changed', time);
       },
 
       renderPreviousMonth() {
@@ -518,9 +525,9 @@
             .filter((day) => day.belongsToThisMonth === true);
         }
 
-        if (this.endDate !== Infinity) {
+        if (this.lastSelectableDate !== Infinity) {
           if (moment(firstDayOfLastMonth[0].date).format('YYYYMM') ==
-            moment(new Date(this.endDate)).format('YYYYMM')) {
+            moment(new Date(this.lastSelectableDate)).format('YYYYMM')) {
             return;
           }
         }
@@ -536,7 +543,7 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        this.activeMonthIndex = date.getMonth() - this.startDate.getMonth();
+        this.activeMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth();
       },
 
       setCheckOut(date) {
@@ -579,14 +586,16 @@
       }
     },
     beforeMount() {
-      let currentMonth = new Date(this.startDate);
+      let currentMonth = this.firstSelectableDate;
       this.createMonth(currentMonth);
       for(let i = 0; i < this.preloadedMonthCount; i++){
         let tempNextMonth = this.getNextMonth(currentMonth);
         this.createMonth(tempNextMonth);
         currentMonth = tempNextMonth;
       }
-      this.activeMonthIndex = this.checkIn.getMonth() - this.startDate.getMonth();
+      if (this.checkIn) {
+        this.activeMonthIndex = this.checkIn.getMonth() - this.firstSelectableDate.getMonth();
+      }
       if (this.activeMonthIndex < 0) this.activeMonthIndex = 0;
       this.parseDisabledDates();
     },
@@ -631,6 +640,7 @@
     $phone: '(max-width: 479px)';
     $desktop: '(min-width: 768px)';
     $desktop-and-tablet: '(min-width: 480px)';
+    $between-tablet-and-desktop: '(min-width: 768px) and (max-width: 1024px)';
     $up-to-tablet: '(max-width: 767px)';
     $extra-small-screen: '(max-width: 23em)';
 
@@ -699,6 +709,11 @@
           left: 50%;
           margin-left: -350px;
         }
+
+        @include device($between-tablet-and-desktop) {
+          left: 0;
+          margin-left: 0;
+        }
       }
 
       &__wrapper {
@@ -729,7 +744,7 @@
         font-size: inherit;
         height: 100%;
         line-height: inherit;
-        padding-left: 10px;
+        padding-left: 3px;
         text-align: left;
         text-indent: 5px;
         width: 50%;
@@ -737,6 +752,7 @@
 
         @include device($phone) {
           border: 1px solid $light-gray;
+          padding-left: 10px;
           text-indent: 0;
           width: calc(55% + 4px);
         }
@@ -771,8 +787,8 @@
 
         &--single-date:first-child {
           background: none;
-          text-align: center;
-          width: 100%;
+          text-align: left;
+          width: 100% !important;
         }
       }
 
@@ -870,14 +886,6 @@
         &--selected {
           background-color: $sky-blue;
           color: $black;
-
-          &:hover {
-            background-color: $primary-color;
-            box-shadow: 0 0 10px 3px rgba($gray, 0.4);
-            color: $white;
-            position: relative;
-            z-index: 1;
-          }
         }
 
         &--first-day-selected,
@@ -910,6 +918,14 @@
           color: $white;
           opacity: 0.25;
           pointer-events: none;
+        }
+
+        &:hover {
+          background-color: $primary-color;
+          box-shadow: 0 0 10px 3px rgba($gray, 0.4);
+          color: $white;
+          position: relative;
+          z-index: 1;
         }
       }
 
@@ -1142,7 +1158,7 @@
 
         &.hide-desktop-and-tablet {
           &:nth-child(even) {
-            top: x;
+            top: 0;
           }
 
           &:nth-child(odd) {

@@ -896,7 +896,9 @@
         }
 
         &--allowed-checkout {
-          color: $medium-gray;
+          color: $black;
+          font-weight: bolder;
+          font-size: larger;
         }
 
         &--valid:hover,

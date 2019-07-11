@@ -192,7 +192,14 @@ export default {
     },
     currentTime() {
       if (this.selectedTime !== '') {
-        return this.timePairs[this.timePairs.findIndex(time => time.value === this.selectedTime)].text;
+        let index;
+        for (let i = 0; i < this.timePairs.length; ++i) {
+          if (this.timePairs[i].value === this.selectedTime) {
+            index = i;
+            break;
+          }
+        }
+        return this.timePairs[index].text;
       } else {
         return this.defaultText;
       }

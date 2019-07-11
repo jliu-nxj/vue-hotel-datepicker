@@ -4,7 +4,10 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 const path = require('path')
 
-config.output.filename = 'vue-hotel-datepicker.min.js'
+const useVersioning = true;
+const name = "vue-datetimepicker"
+
+config.output.filename = useVersioning ? `${name}.[hash:7].min.js` : `${name}.min.js`
 config.output.libraryTarget = 'umd'
 config.output.library = 'hotel-date-picker'
 
@@ -26,7 +29,7 @@ config.plugins = (config.plugins || []).concat([
   }),
 
   new ExtractTextPlugin({
-    filename: 'vue-hotel-datepicker.min.css',
+    filename: useVersioning ? `${name}.[hash:7].min.css` : `${name}.min.css`,
   }),
 
   new UglifyJSPlugin({

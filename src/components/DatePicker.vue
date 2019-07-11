@@ -1,6 +1,12 @@
 <template lang='pug'>
   .datepicker__wrapper(
-    v-if='show' v-on-click-outside='clickOutside' @blur="clickOutside"
+    v-if='show'
+    v-on-click-outside='clickOutside'
+    tabindex="0"
+    ref="datepick"
+    @blur="hideDatepicker"
+    @keyup.esc="hideDatepicker"
+    @focus="openDatePicker"
     :class="`${isOpen ? 'datepicker__wrapper--is-active' : ''}` "
   )
     .datepicker__close-button.-hide-on-desktop(v-if='isOpen' @click='hideDatepicker') &plus;
@@ -9,7 +15,6 @@
         :i18n="formattedi18n"
         :input-date="formatDate(checkIn, checkInTime)"
         :is-open="isOpen"
-        :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerIn"
         :single-day-selection="singleDaySelection"
         :showTimePicker="showTimePicker"
@@ -20,7 +25,6 @@
         :input-date="formatDate(checkOut, checkOutTime)"
         input-date-type="check-out"
         :is-open="isOpen"
-        :hide-datepicker="hideDatepicker"
         :toggle-datepicker="toggleDatepickerOut"
         :single-day-selection="singleDaySelection"
         :showTimePicker="showTimePicker"
@@ -75,19 +79,19 @@
           span.datepicker__month-button.datepicker__month-button--prev.-hide-up-to-tablet(
             @click='renderPreviousMonth'
             @keyup.enter.stop.prevent='renderPreviousMonth'
-            :tabindex='isOpen ? 0 : -1'
           )
           span.datepicker__month-button.datepicker__month-button--next.-hide-up-to-tablet(
             @click='renderNextMonth'
             @keyup.enter.stop.prevent='renderNextMonth'
-            :tabindex='isOpen ? 0 : -1'
           )
         .datepicker__months(v-if='screenSize == "desktop"')
           div.datepicker__month(v-for='n in [0,1]'  v-bind:key='n')
             p.datepicker__month-name(v-text='getMonth(months[activeMonthIndex+n].days[15].date)')
             .datepicker__week-row.-hide-up-to-tablet
               .datepicker__week-name(v-if='dayNames' v-for='dayName in dayNames' v-text='dayName')
-            .square(v-for='day in months[activeMonthIndex+n].days'
+            .square(
+              :class="day.belongsToThisMonth ? '' : 'datepicker__no-select'"
+              v-for='day in months[activeMonthIndex+n].days'
               @mouseover='hoveringDate = day.date'
               )
               Day(
@@ -289,6 +293,10 @@
         type: String,
         required: true,
       },
+      autoCloseDatepicker: {
+        type: Boolean,
+        required: true,
+      }
     },
 
     data() {
@@ -379,7 +387,9 @@
           this.nextDisabledDate = null;
           this.show = true;
           this.parseDisabledDates();
-          this.reRender();
+          if (!this.showTimePicker) {
+            this.reRender();
+          }
         }
         this.$emit('check-out-changed', newDate);
       },
@@ -399,7 +409,7 @@
         if (date) {
           dateTime = moment(date).format(this.format);
         }
-        if (time && this.screenSize === 'desktop') {
+        if (time && this.screenSize !== 'smartphone') {
           if (this.i18n) {
             dateTime = `${dateTime} ${time}`;
           } else {
@@ -428,6 +438,10 @@
         this.$nextTick(() => {
           this.show = true;
         });
+      },
+
+      openDatePicker() {
+        this.isOpen = true;
       },
 
       hideDatepicker() {
@@ -716,6 +730,10 @@
         }
       }
 
+      &__no-select {
+        pointer-events: none;
+      }
+
       &__wrapper {
         *,
         *::before,
@@ -744,11 +762,22 @@
         font-size: inherit;
         height: 100%;
         line-height: inherit;
-        padding-left: 3px;
+        padding-left: 8px;
         text-align: left;
         text-indent: 5px;
         width: 50%;
         word-spacing: 0;
+
+        @media screen and (min-width: 992px) and (max-width: 1200px) {
+          padding-left: 2px
+        }
+
+        @include device($tablet) {
+          border: 1px solid $light-gray;
+          padding-left: 2px;
+          text-indent: 0;
+          width: calc(55% + 4px);
+        }
 
         @include device($phone) {
           border: 1px solid $light-gray;

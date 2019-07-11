@@ -389,6 +389,9 @@
           this.parseDisabledDates();
           if (!this.showTimePicker) {
             this.reRender();
+            this.isOpen = false;
+          } else {
+            this.isOpen = true;
           }
         }
         this.$emit('check-out-changed', newDate);
@@ -445,6 +448,7 @@
       },
 
       hideDatepicker() {
+        this.reRender();
         this.isOpen = false;
         this.checkInClicked = false;
         this.checkOutClicked = false;

@@ -4,7 +4,6 @@
     v-on-click-outside='clickOutside'
     tabindex="0"
     ref="datepick"
-    @blur="hideDatepicker"
     @keyup.esc="hideDatepicker"
     @focus="openDatePicker"
     :class="`${isOpen ? 'datepicker__wrapper--is-active' : ''}` "

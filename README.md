@@ -1,44 +1,5 @@
-[![Code Climate](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/badges/gpa.svg)](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/)
-[![Issue Count](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/badges/issue_count.svg)](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker)
-[![dependencies Status](https://david-dm.org/krystalcampioni/vue-hotel-datepicker/status.svg)](https://david-dm.org/krystalcampioni/vue-hotel-datepicker) [![devDependencies Status](https://david-dm.org/krystalcampioni/vue-hotel-datepicker/dev-status.svg)](https://david-dm.org/krystalcampioni/vue-hotel-datepicker?type=dev)
-[![npm](https://img.shields.io/npm/dt/vue-hotel-datepicker.svg)](vue-hotel-datepicker)
-[![Build Status](https://travis-ci.org/krystalcampioni/vue-hotel-datepicker.svg?branch=master)](https://travis-ci.org/krystalcampioni/vue-hotel-datepicker)
-
-# vue-hotel-datepicker
+# date-time-picker
 A responsive date range picker for Vue.js that displays the number of nights selected and allow several useful options like custom check-in/check-out rules, localisation support and more.
-
-
-![demo gif](https://github.com/krystalcampioni/vue-hotel-datepicker/blob/master/demo.gif?raw=true)
-
-
-
-## Demo
-[https://krystalcampioni.github.io/vue-hotel-datepicker/](https://krystalcampioni.github.io/vue-hotel-datepicker/)
-
-## Installation
-
-#### NPM
-
-Install the package:
-
-```
-npm install vue-hotel-datepicker --save
-```
-
-```javascript
-import hotel-date-picker from 'vue-hotel-datepicker'
-
-export default {
-  components: {
-    hotel-date-picker,
-  },
-}
-```
-
-```html
-<hotel-date-picker />
-```
-
 
 ## Props/Options
 
@@ -202,6 +163,3 @@ Emitted every time a new time in value is selected with the new time string as p
 
 ### time-out-changed
 Emitted every time a new time out value is selected with the new time string as payload
-
-## Credits
-This component was originally built as a Vue wrapper component for the [Hotel Datepicker](https://github.com/benitolopez/hotel-datepicker) by @benitolopez. Version 2.0.0 was completely rewritten with Vue, removing the original library, removing some features and introducing others.

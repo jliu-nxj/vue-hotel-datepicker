@@ -187,7 +187,7 @@
   };
 
   export default {
-    name: 'HotelDatePicker',
+    name: 'DateTimePicker',
 
     directives: {
       'on-click-outside': onClickOutside

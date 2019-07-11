@@ -9,7 +9,7 @@ const name = "vue-datetimepicker"
 
 config.output.filename = useVersioning ? `${name}.[hash:7].min.js` : `${name}.min.js`
 config.output.libraryTarget = 'umd'
-config.output.library = 'hotel-date-picker'
+config.output.library = 'date-time-picker'
 
 config.entry = path.resolve(__dirname, '../src/components/DatePicker.vue')
 

@@ -5,7 +5,6 @@
     data-qa='datepickerInput'
     :class="inputClass"
     v-text="inputDate ? inputDate : i18n[inputDateType]"
-    :tabindex="tabIndex"
   )
 </template>
 
@@ -51,9 +50,6 @@ export default {
         'datepicker__input--single-date': this.singleDaySelection,
       };
     },
-    tabIndex() {
-      return this.inputDateType === 'check-in' ? 0 : -1;
-    }
   },
 };
 </script>

@@ -7,7 +7,6 @@
         @keyup.enter.prevent.stop='dayClicked(date)'
         v-text='dayNumber'
         :class='dayClass'
-        :tabindex="tabIndex"
         ref="day"
       )
 </template>
@@ -84,12 +83,6 @@ export default {
   },
 
   computed: {
-    tabIndex() {
-      if (!this.isOpen || !this.belongsToThisMonth || this.isDisabled || !this.isClickable()) {
-        return -1;
-      }
-      return 0;
-    },
     nightsCount() {
       return this.countDays(this.checkIn, this.hoveringDate);
     },

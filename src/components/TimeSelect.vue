@@ -17,13 +17,13 @@
     :style="dropDownMenuStyle"
   )
     .dropdown-content
-      option.dropdown-item(
+      span.dropdown-item(
         disabled
         value=""
         v-text="defaultText"
         style="display: none;"
       )
-      option.dropdown-item(
+      span.dropdown-item(
         v-for="times in timePairs"
         :value="times.value"
         v-text="times.text"
@@ -48,7 +48,7 @@ export default {
     },
     selectedTime: {
       type: String,
-      required: true,
+      default: null,
     },
     timeIndex: {
       type: Number,
@@ -191,7 +191,7 @@ export default {
       return `z-index: ${zIndex}`;
     },
     currentTime() {
-      if (this.selectedTime !== '') {
+      if (this.selectedTime !== null) {
         let index;
         for (let i = 0; i < this.timePairs.length; ++i) {
           if (this.timePairs[i].value === this.selectedTime) {

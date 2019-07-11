@@ -200,14 +200,6 @@
     },
 
     props: {
-      startTimeValue:{
-        default: null,
-        type: String
-      },
-      endTimeValue: {
-        default: null,
-        type: String,
-      },
       format: {
         default: 'YYYY-MM-DD',
         type: String
@@ -222,6 +214,10 @@
         default: null,
         type: Date
       },
+      startTimeValue:{
+        default: null,
+        type: String
+      },
       lastSelectableDate: {
         default: Infinity,
         type: [Date, String, Number]
@@ -229,6 +225,10 @@
       endingDateValue: {
         default: null,
         type: Date
+      },
+      endTimeValue: {
+        default: null,
+        type: String,
       },
       firstDayOfWeek: {
         default: 0,
@@ -763,6 +763,7 @@
         color: $primary-text-color;
         float: left;
         font-size: inherit;
+        font-family: inherit;
         height: 100%;
         line-height: inherit;
         padding-left: 8px;
@@ -830,8 +831,6 @@
         }
 
         &-wrapper {
-          background: $white;
-          border: 1px solid #e5e5e5;
           cursor: pointer;
           display: block;
           float: left;

@@ -167,6 +167,12 @@ Will show this string in the checkIn box by default when `startTimeValue` is emp
 
 Will show this string in the checkOut box by default when `endTimeValue` is empty/null.
 
+# autoCloseDatepicker
+- Type: `Boolean`
+- Required: `true`
+
+Boolean that is used to either close datepicker on endDate selection or leave it open (to allow for time select)
+
 
 ## API
 ⚠️ In order to open/close the datepicker from an external element, such as a button make sure to set `closeDatepickerOnClickOutside` to false

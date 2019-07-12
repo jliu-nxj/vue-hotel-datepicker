@@ -27,7 +27,7 @@
         v-for="times in timePairs"
         :value="times.value"
         v-text="times.text"
-        @click="onTimeChange"
+        @click="onTimeChange(times.value)"
       )
 
 </template>
@@ -161,8 +161,8 @@ export default {
     };
   },
   methods: {
-    onTimeChange(event) {
-      this.$emit('time-change', event.target.value);
+    onTimeChange(value) {
+      this.$emit('time-change', value);
     },
     toggleTimeSelectPicker(){
       this.isOpen = !this.isOpen;

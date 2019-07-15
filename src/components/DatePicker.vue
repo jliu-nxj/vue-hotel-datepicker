@@ -386,12 +386,6 @@
           this.nextDisabledDate = null;
           this.show = true;
           this.parseDisabledDates();
-          if (!this.showTimePicker) {
-            this.reRender();
-            this.isOpen = false;
-          } else {
-            this.isOpen = true;
-          }
         }
         this.$emit('check-out-changed', newDate);
       },
@@ -471,6 +465,14 @@
         }
       },
 
+      hideIfNotTimePicker() {
+        if (!this.showTimePicker) {
+          this.hideDatepicker();
+        } else {
+          this.isOpen = true;
+        }
+      },
+
       handleDayClick(event) {
 
         if (this.checkIn == null && this.singleDaySelection == false) {
@@ -485,17 +487,21 @@
         } else if (this.singleDaySelection == true) {
           this.setCheckIn(event.date);
           this.setCheckOut(event.date);
+          this.hideDatepicker();
         }
         else if (this.checkIn !== null && this.checkOut !== null && this.checkInClicked) {
           this.setCheckIn(event.date);
           this.checkInClicked = false;
           if (event.date > this.checkOut) {
             this.setCheckOut(null);
+          } else {
+            this.hideIfNotTimePicker();
           }
         }
         else if (this.checkIn !== null && this.checkOut !== null && this.checkOutClicked) {
           this.setCheckOut(event.date);
           this.checkOutClicked = false;
+          this.hideIfNotTimePicker();
         }
         else {
           if (event.date < this.checkIn) {
@@ -503,6 +509,7 @@
             this.setCheckOut(null);
           } else {
             this.setCheckOut(event.date);
+            this.hideIfNotTimePicker();
           }
         }
 

@@ -33,7 +33,7 @@ config.plugins = (config.plugins || []).concat([
   }),
 
   new UglifyJSPlugin({
-    sourceMap: true,
+    // sourceMap: true,
 
     compress: {
       warnings: false,

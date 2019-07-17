@@ -299,13 +299,12 @@
     },
 
     data() {
-      const checkOutDate = this.singleDaySelection ? this.startingDateValue : this.endingDateValue;
       return {
         hoveringDate: null,
         checkInClicked: false,
         checkOutClicked: false,
         checkIn: this.startingDateValue,
-        checkOut: checkOutDate,
+        checkOut: this.endingDateValue,
         checkInTime: this.startTimeValue,
         checkOutTime: this.endTimeValue,
         months: [],
@@ -360,6 +359,25 @@
     },
 
     watch: {
+      startingDateValue() {
+        this.checkIn = this.startingDateValue;
+        if (this.singleDaySelection) {
+          this.checkOut = this.startingDateValue;
+        }
+      },
+      startTimeValue(value){
+        this.checkInTime = value;
+      },
+      endingDateValue(value) {
+        if (this.singleDaySelection) {
+          this.checkOut = this.startingDateValue;
+        } else {
+          this.checkOut = value;
+        }
+      },
+      endTimeValue(value){
+        this.checkOutTime = value;
+      },
       isOpen(value) {
         if (this.screenSize !== 'desktop') {
           const bodyClassList = document.querySelector('body').classList;
@@ -381,7 +399,7 @@
         this.$emit('check-in-changed', newDate);
       },
       checkOut(newDate) {
-        if (this.checkOut !== null && this.checkOut !== null) {
+        if (this.checkOut !== null) {
           this.hoveringDate = null;
           this.nextDisabledDate = null;
           this.show = true;
@@ -389,12 +407,6 @@
         }
         this.$emit('check-out-changed', newDate);
       },
-      startingDateValue() {
-        this.checkIn = this.startingDateValue;
-        if (this.singleDaySelection) {
-          this.checkOut = this.startingDateValue;
-        }
-      }
     },
 
     methods: {
@@ -492,6 +504,7 @@
         else if (this.checkIn !== null && this.checkOut !== null && this.checkInClicked) {
           this.setCheckIn(event.date);
           this.checkInClicked = false;
+          this.checkOutClicked = true;
           if (event.date > this.checkOut) {
             this.setCheckOut(null);
           } else {
@@ -501,6 +514,7 @@
         else if (this.checkIn !== null && this.checkOut !== null && this.checkOutClicked) {
           this.setCheckOut(event.date);
           this.checkOutClicked = false;
+          this.checkInClicked = true;
           this.hideIfNotTimePicker();
         }
         else {
@@ -567,7 +581,8 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        this.activeMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth();
+        const checkInMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth() - 1;
+        this.activeMonthIndex = checkInMonthIndex > 0 ? checkInMonthIndex : 0;
       },
 
       setCheckOut(date) {

@@ -8,7 +8,7 @@ A responsive date range picker for Vue.js that displays the number of nights sel
 - Type: `String`
 - Default: `YYYY-MM-DD`
 
-The date format string.
+The date format string to display.
 
 ### firstSelectableDate
 
@@ -24,6 +24,13 @@ The start view date. All the dates before this date will be disabled.
 
 The initial value of the start date.
 
+### startingTimeValue
+
+- Type: `String`
+- Default: `null`
+
+The initial value of the start time.
+
 ### lastSelectableDate
 
 - Type: `Date` or `String` or `Number`
@@ -37,6 +44,13 @@ The end view date. All the dates after this date will be disabled.
 - Default: `null`
 
 The initial value of the end date.
+
+### endingTimeValue
+
+- Type: `String`
+- Default: `null`
+
+The initial value of the end time.
 
 ### firstDayOfWeek
 
@@ -120,13 +134,13 @@ Shows the time select picker when true.
 - Type: `String`
 - Required: `true`
 
-Will show this string in the checkIn box by default when `startTimeValue` is empty/null.
+Will show this string in the checkIn box by default when `startingDateValue` is empty/null.
 
 ## endString
 - Type: `String`
 - Required: `true`
 
-Will show this string in the checkOut box by default when `endTimeValue` is empty/null.
+Will show this string in the checkOut box by default when `endingDateValue` is empty/null.
 
 # autoCloseDatepicker
 - Type: `Boolean`

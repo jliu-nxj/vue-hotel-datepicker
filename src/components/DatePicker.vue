@@ -581,8 +581,6 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        const checkInMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth() - 1;
-        this.activeMonthIndex = checkInMonthIndex > 0 ? checkInMonthIndex : 0;
       },
 
       setCheckOut(date) {

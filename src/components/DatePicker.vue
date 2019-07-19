@@ -491,6 +491,7 @@
           if (this.checkOut !== null && event.date < this.checkOut) {
             this.setCheckIn(event.date);
             this.checkInClicked = false;
+            this.hideIfNotTimePicker();
           }
           else {
             this.setCheckIn(event.date);
@@ -515,7 +516,12 @@
           this.setCheckOut(event.date);
           this.checkOutClicked = false;
           this.checkInClicked = true;
+          if (event.date < this.checkIn) {
+            this.setCheckIn(null);
+            this.setCheckOut(event.date);
+          } else {
           this.hideIfNotTimePicker();
+        }
         }
         else {
           if (event.date < this.checkIn) {

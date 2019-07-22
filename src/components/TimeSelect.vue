@@ -215,7 +215,7 @@ export default {
 
   .dropdown {
     display: table;
-    height: 100%;
+    height: inherit;
     margin: 0 auto;
     width: 70%;
 

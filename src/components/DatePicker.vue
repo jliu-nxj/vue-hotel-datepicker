@@ -85,7 +85,7 @@
           )
         .datepicker__months(v-if='screenSize == "desktop"')
           div.datepicker__month(v-for='n in [0,1]'  v-bind:key='n')
-            p.datepicker__month-name(v-text='getMonth(months[activeMonthIndex+n].days[15].date)')
+            p.datepicker__month-name(v-text='getMonthAndYear(months[activeMonthIndex+n].days[15].date)')
             .datepicker__week-row.-hide-up-to-tablet
               .datepicker__week-name(v-if='dayNames' v-for='dayName in dayNames' v-text='dayName')
             .square(
@@ -141,7 +141,7 @@
               v-for='(a, n) in months'
               v-bind:key='n'
             )
-              p.datepicker__month-name(v-text='getMonth(months[n].days[15].date)')
+              p.datepicker__month-name(v-text='getMonthAndYear(months[n].days[15].date)')
               .datepicker__week-row.-hide-up-to-tablet
                 .datepicker__week-name(
                   v-for='dayName in dayNames'
@@ -319,6 +319,8 @@
         yUp: null,
         sortedDisabledDates: null,
         screenSize: this.handleWindowResize(),
+        xcheckin: null,
+        xcheckout: null,
       };
     },
 
@@ -520,8 +522,8 @@
             this.setCheckIn(null);
             this.setCheckOut(event.date);
           } else {
-          this.hideIfNotTimePicker();
-        }
+            this.hideIfNotTimePicker();
+          }
         }
         else {
           if (event.date < this.checkIn) {
@@ -598,6 +600,10 @@
       },
 
       getMonth(date) {
+        return moment(date).format('MMMM');
+      },
+
+      getMonthAndYear(date) {
         return moment(date).format('MMMM YYYY');
       },
 
@@ -639,7 +645,9 @@
       if (this.checkIn) {
         this.activeMonthIndex = this.checkIn.getMonth() - this.firstSelectableDate.getMonth();
       }
-      if (this.activeMonthIndex < 0) this.activeMonthIndex = 0;
+      if (this.activeMonthIndex < 0) {
+        this.activeMonthIndex = 0;
+      }
       this.parseDisabledDates();
     },
 
@@ -929,7 +937,7 @@
         &--valid:hover,
         &--allowed-checkout:hover {
           background-color: $white;
-          box-shadow: 0 0 10px 3px rgba($gray, 0.4);
+          box-shadow: 0 0 10px 1px rgba($gray, 0.4);
           color: $primary-color;
           position: relative;
           z-index: 1;

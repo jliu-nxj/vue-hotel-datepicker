@@ -53,7 +53,7 @@
 
     .datepicker( :class='`${ isOpen ? "datepicker--open" : "datepicker--closed" }`')
       .-hide-on-desktop
-        .datepicker__dummy-wrapper.datepicker__dummy-wrapper--no-border(
+        .datepicker__dummy-wrapper.datepicker__dummy-wrapper--border(
           :class="`${isOpen ? 'datepicker__dummy-wrapper--is-active' : ''}`"
           v-if='isOpen'
         )
@@ -344,8 +344,11 @@
       },
       datepickerDummyWrapperClass() {
         if (this.isOpen) {
-          if (!this.showTimePicker || this.singleDaySelection) {
+          if (this.singleDaySelection) {
             return 'datepicker__input--single-date datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
+          }
+          if (!this.showTimePicker) {
+            return 'datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
           } else {
             return 'datepicker__dummy-input--is-active';
           }
@@ -389,7 +392,7 @@
             setTimeout(() => {
               let swiperWrapper = document.getElementById('swiperWrapper');
               let monthHeight = document.querySelector('.datepicker__month').offsetHeight;
-              swiperWrapper.scrollTop = this.activeMonthIndex * monthHeight;
+              swiperWrapper.scrollTop = (this.activeMonthIndex + 1) * monthHeight * 0.8;
             },100);
           }
           else {
@@ -445,13 +448,26 @@
 
       reRender() {
         this.show = false;
-        this.$nextTick(() => {
+        this.$nextTick(function() {
           this.show = true;
         });
       },
 
       openDatePicker() {
         this.isOpen = true;
+        setTimeout(function() {
+          const datePickerOpen = document.getElementsByClassName('datepicker--open')[0];
+          const leftEdge = datePickerOpen.getBoundingClientRect().left;
+          const rightEdge = datePickerOpen.getBoundingClientRect().right;
+          if (leftEdge < 0) {
+            datePickerOpen.style.left = 0;
+            datePickerOpen.style.marginLeft = 0;
+          } else if (rightEdge < 0) {
+            datePickerOpen.style.left = 'unset';
+            datePickerOpen.style.marginLeft = 'unset';
+            datePickerOpen.style.right = 0;
+          }
+        }, 0);
       },
 
       hideDatepicker() {
@@ -464,13 +480,13 @@
       toggleDatepickerIn() {
         this.checkInClicked = true;
         this.checkOutClicked = false;
-        this.isOpen = true;
+        this.openDatePicker();
       },
 
       toggleDatepickerOut() {
         this.checkInClicked = false;
         this.checkOutClicked = true;
-        this.isOpen = true;
+        this.openDatePicker();
       },
 
       clickOutside() {
@@ -483,7 +499,7 @@
         if (!this.showTimePicker) {
           this.hideDatepicker();
         } else {
-          this.isOpen = true;
+          this.openDatePicker();
         }
       },
 
@@ -589,6 +605,8 @@
 
       setCheckIn(date) {
         this.checkIn = date;
+        const currentMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth() - 1;
+        this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
       setCheckOut(date) {
@@ -760,11 +778,11 @@
           left: 50%;
           margin-left: -350px;
         }
+      }
 
-        @include device($between-tablet-and-desktop) {
-          left: 0;
-          margin-left: 0;
-        }
+      &__left-align {
+        left: 0;
+        margin-left: 0
       }
 
       &__no-select {
@@ -807,15 +825,15 @@
         word-spacing: 0;
 
         @media screen and (min-width: 992px) and (max-width: 1200px) {
-          padding-left: 2px
+          padding-left: 0
         }
 
-        @include device($tablet) {
-          border: 1px solid $light-gray;
-          padding-left: 2px;
-          text-indent: 0;
-          width: calc(55% + 4px);
-        }
+        // @include device($tablet) {
+        //   border: 1px solid $light-gray;
+        //   padding-left: 2px;
+        //   text-indent: 0;
+        //   width: calc(55% + 4px);
+        // }
 
         @include device($phone) {
           border: 1px solid $light-gray;
@@ -852,9 +870,8 @@
           color: $primary-color;
         }
 
-        &--single-date:first-child {
-          background: none;
-          text-align: left;
+        &--single-date {
+          border: 1px solid $light-gray;
           width: 100% !important;
         }
       }
@@ -875,22 +892,25 @@
             border: 0;
           }
 
-          &--no-border.datepicker__dummy-wrapper {
-            border: 0;
+          &--border.datepicker__dummy-wrapper {
+            border: 1px solid $light-gray;
             margin-top: 15px;
 
             .datepicker__input {
               margin-bottom: 0;
               width: 50%;
 
-              @include device($phone) {
+               @include device($up-to-tablet) {
                 height: 46px;
-                left: 15px;
                 padding-top: 15px;
                 position: relative;
                 text-align: center;
-                width: 60%;
                 word-spacing: 5px;
+              }
+
+              @include device($phone) {
+                left: 15px;
+                width: 60%;
               }
 
               @include device($tablet) {

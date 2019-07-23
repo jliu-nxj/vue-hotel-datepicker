@@ -220,12 +220,12 @@ export default {
     width: 70%;
 
     &-trigger {
-      height: 100%;
+      height: inherit;
     }
 
     &__button {
-      font-size: 14px;
-      height: 100%;
+      font-size: inherit;
+      height: inherit;
       width: 100%;
     }
 

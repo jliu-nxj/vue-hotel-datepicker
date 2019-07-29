@@ -71,6 +71,12 @@ export default {
       default: false,
       type: Boolean
     },
+    isDayTooltip: {
+      type: Boolean,
+    },
+    checkOutClicked: {
+      type: Boolean,
+    }
   },
 
   data() {
@@ -84,7 +90,11 @@ export default {
 
   computed: {
     nightsCount() {
-      return this.countDays(this.checkIn, this.hoveringDate);
+      if (this.isDayTooltip) {
+        return this.countDays(this.checkIn, this.hoveringDate) + 1;
+      } else {
+        return this.countDays(this.checkIn, this.hoveringDate);
+      }
     },
     tooltipMessageDisplay() {
       return this.tooltipMessage
@@ -95,8 +105,8 @@ export default {
     showTooltip() {
       return  !this.isDisabled &&
               this.date == this.hoveringDate &&
-              this.checkIn !== null &&
-              this.checkOut == null;
+              this.hoveringDate >= this.checkIn &&
+              this.checkIn !== null && this.checkOutClicked;
     },
 
     isToday() {
@@ -178,14 +188,14 @@ export default {
   },
 
   watch: {
-    hoveringDate(date) {
+    hoveringDate() {
       if ( this.checkIn !== null  && this.checkOut == null && this.isDisabled == false) {
         this.isDateLessOrEquals(this.checkIn, this.date) &&
         this.isDateLessOrEquals(this.date, this.hoveringDate) ?
           this.isHighlighted = true : this.isHighlighted = false;
       }
     },
-    activeMonthIndex(index) {
+    activeMonthIndex() {
       this.checkIfDisabled();
       this.checkIfHighlighted();
       if ( this.checkIn !== null  && this.checkOut !== null ) {

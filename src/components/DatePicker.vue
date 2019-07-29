@@ -104,9 +104,11 @@
                 :hoveringDate='hoveringDate'
                 :dayNumber='getDay(day.date)'
                 :belongsToThisMonth='day.belongsToThisMonth'
-                :checkIn='checkIn'
-                :checkOut='!singleDaySelection ? checkOut : null'
-                :singleDaySelection='singleDaySelection'
+                :check-in='checkIn'
+                :check-out='!singleDaySelection ? checkOut : null'
+                :single-day-selection='singleDaySelection'
+                :is-day-tooltip='isDayTooltip'
+                :check-out-clicked='checkOutClicked'
               )
         .timeselect__wrapper(
           :class="timeselectClass"
@@ -163,9 +165,11 @@
                   :hoveringDate='hoveringDate'
                   :dayNumber='getDay(day.date)'
                   :belongsToThisMonth='day.belongsToThisMonth'
-                  :checkIn='checkIn'
-                  :checkOut='!singleDaySelection ? checkOut : null'
-                  :singleDaySelection='singleDaySelection'
+                  :check-in='checkIn'
+                  :check-out='!singleDaySelection ? checkOut : null'
+                  :single-day-selection='singleDaySelection'
+                  :is-day-tooltip='isDayTooltip'
+                  :check-out-clicked='checkOutClicked'
                 )
 </template>
 
@@ -178,13 +182,6 @@
   import DateInput from './DateInput.vue';
   import TimeSelect from './TimeSelect.vue';
   import Helpers from './helpers.js';
-
-  const defaulti18n = {
-    night: 'Night',
-    nights: 'Nights',
-    locale: 'en',
-    'day-names': moment.weekdaysShort(),
-  };
 
   export default {
     name: 'DateTimePicker',
@@ -264,9 +261,9 @@
         default: true,
         type: [Boolean, Function]
       },
-      tooltipMessage: {
-        default: null,
-        type: String
+      isDayTooltip: {
+        default: false,
+        type: Boolean,
       },
       singleDaySelection: {
         default: false,
@@ -325,12 +322,33 @@
     },
 
     computed: {
+      tooltipMessages() {
+        if (this.isDayTooltip) {
+          return {
+            night: 'Day',
+            nights: 'Days',
+          };
+        } else {
+          return {
+            night: 'Night',
+            nights: 'Nights',
+          };
+        }
+      },
+      defaulti18n() {
+        return {
+          night: this.tooltipMessages.night,
+          nights: this.tooltipMessages.nights,
+          locale: 'en',
+          'day-names': moment.weekdaysShort(),
+        };
+      },
       dayNames() {
         return moment.weekdaysShort();
       },
       formattedi18n() {
         return {
-          ...defaulti18n,
+          ...this.defaulti18n,
           'check-in': this.startString,
           'check-out': this.endString,
           'day-names': moment.weekdaysShort(),
@@ -424,9 +442,9 @@
         }
         if (time && this.screenSize !== 'smartphone') {
           if (this.i18n) {
-            dateTime = `${dateTime} ${time}`;
+            dateTime = `${dateTime}, ${time}`;
           } else {
-            dateTime = `${dateTime} ${moment(time, 'HH:mm').format('hh:mm A')}`;
+            dateTime = `${dateTime}, ${moment(time, 'HH:mm').format('hh:mm A')}`;
           }
         }
         return dateTime;
@@ -457,17 +475,19 @@
         this.isOpen = true;
         setTimeout(function() {
           const datePickerOpen = document.getElementsByClassName('datepicker--open')[0];
-          const leftEdge = datePickerOpen.getBoundingClientRect().left;
-          const rightEdge = datePickerOpen.getBoundingClientRect().right;
-          if (leftEdge < 0) {
-            datePickerOpen.style.left = 0;
-            datePickerOpen.style.marginLeft = 0;
-          } else if (rightEdge < 0) {
-            datePickerOpen.style.left = 'unset';
-            datePickerOpen.style.marginLeft = 'unset';
-            datePickerOpen.style.right = 0;
+          if (datePickerOpen) {
+            const leftEdge = datePickerOpen.getBoundingClientRect().left;
+            const rightEdge = datePickerOpen.getBoundingClientRect().right;
+            if (leftEdge < 0) {
+              datePickerOpen.style.left = 0;
+              datePickerOpen.style.marginLeft = 0;
+            } else if (rightEdge < 0) {
+              datePickerOpen.style.left = 'unset';
+              datePickerOpen.style.marginLeft = 'unset';
+              datePickerOpen.style.right = 0;
+            }
           }
-        }, 0);
+        }, 500);
       },
 
       hideDatepicker() {
@@ -513,6 +533,8 @@
           }
           else {
             this.setCheckIn(event.date);
+            this.checkInClicked = false;
+            this.checkOutClicked = true;
             this.setCheckOut(null);
           }
         } else if (this.singleDaySelection == true) {
@@ -544,6 +566,8 @@
         else {
           if (event.date < this.checkIn) {
             this.setCheckIn(event.date);
+            this.checkInClicked = false;
+            this.checkOutClicked = true;
             this.setCheckOut(null);
           } else {
             this.setCheckOut(event.date);
@@ -828,13 +852,6 @@
           padding-left: 0
         }
 
-        // @include device($tablet) {
-        //   border: 1px solid $light-gray;
-        //   padding-left: 2px;
-        //   text-indent: 0;
-        //   width: calc(55% + 4px);
-        // }
-
         @include device($phone) {
           border: 1px solid $light-gray;
           padding-left: 10px;
@@ -848,6 +865,10 @@
           @include device($phone) {
             background: none;
           }
+        }
+
+        &:first-child {
+          background: none;
         }
 
         &--is-active {
@@ -871,8 +892,11 @@
         }
 
         &--single-date {
-          border: 1px solid $light-gray;
           width: 100% !important;
+
+          @include device($phone) {
+            border: 1px solid $light-gray;
+          }
         }
       }
 
@@ -1186,7 +1210,7 @@
         border-radius: 2px;
         color: $white;
         font-size: 11px;
-        margin-left: 5px;
+        margin-left: -5px;
         margin-top: -22px;
         padding: 5px 10px;
         position: absolute;

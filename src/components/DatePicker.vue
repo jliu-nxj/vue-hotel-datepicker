@@ -840,11 +840,11 @@
         float: left;
         font-size: inherit;
         font-family: inherit;
-        height: 100%;
         line-height: inherit;
         padding-left: 8px;
         text-align: left;
         text-indent: 5px;
+        height: inherit;
         width: 50%;
         word-spacing: 0;
 
@@ -857,6 +857,7 @@
           padding-left: 10px;
           text-indent: 0;
           width: calc(55% + 4px);
+          height: unset;
         }
 
         &:last-child {
@@ -909,7 +910,7 @@
           cursor: pointer;
           display: block;
           float: left;
-          height: 100%;
+          height: inherit;
           width: 100%;
 
           @include device($phone) {
@@ -933,7 +934,6 @@
               }
 
               @include device($phone) {
-                left: 15px;
                 width: 60%;
               }
 
@@ -1259,11 +1259,11 @@
           position: absolute;
 
           &:nth-child(even) {
-            top: 15px;
+            top: 16px;
           }
 
           &:nth-child(odd) {
-            top: 61px;
+            top: 62px;
           }
         }
 

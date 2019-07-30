@@ -825,14 +825,17 @@
         position: relative;
         width: 100%;
         z-index: 500;
-
-        &--is-active {
-          z-index: 10000000;
+        @include device($phone) {
+          &--is-active {
+            z-index: 10000000;
+          }
         }
       }
 
       .timeselect__dropdown-menu:first-of-type {
-        z-index: 10000000;
+        @include device($phone) {
+          z-index: 10000000;
+        }
       }
 
       &__input {

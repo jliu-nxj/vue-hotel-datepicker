@@ -806,7 +806,7 @@
 
       &__left-align {
         left: 0;
-        margin-left: 0
+        margin-left: 0;
       }
 
       &__no-select {
@@ -825,6 +825,7 @@
         position: relative;
         width: 100%;
         z-index: 500;
+
         @include device($phone) {
           &--is-active {
             z-index: 10000000;
@@ -841,26 +842,26 @@
       &__input {
         color: $primary-text-color;
         float: left;
-        font-size: inherit;
         font-family: inherit;
+        font-size: inherit;
+        height: inherit;
         line-height: inherit;
         padding-left: 8px;
         text-align: left;
         text-indent: 5px;
-        height: inherit;
         width: 50%;
         word-spacing: 0;
 
         @media screen and (min-width: 992px) and (max-width: 1200px) {
-          padding-left: 0
+          padding-left: 0;
         }
 
         @include device($phone) {
           border: 1px solid $light-gray;
+          height: unset;
           padding-left: 10px;
           text-indent: 0;
           width: calc(55% + 4px);
-          height: unset;
         }
 
         &:last-child {
@@ -928,7 +929,7 @@
               margin-bottom: 0;
               width: 50%;
 
-               @include device($up-to-tablet) {
+              @include device($up-to-tablet) {
                 height: 46px;
                 padding-top: 15px;
                 position: relative;
@@ -977,8 +978,8 @@
 
         &--allowed-checkout {
           color: $black;
-          font-weight: bolder;
           font-size: larger;
+          font-weight: bolder;
         }
 
         &--valid:hover,

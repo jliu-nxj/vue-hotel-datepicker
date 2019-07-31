@@ -852,10 +852,6 @@
         width: 50%;
         word-spacing: 0;
 
-        @media screen and (min-width: 992px) and (max-width: 1200px) {
-          padding-left: 0;
-        }
-
         @include device($phone) {
           border: 1px solid $light-gray;
           height: unset;

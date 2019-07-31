@@ -410,7 +410,7 @@
             setTimeout(() => {
               let swiperWrapper = document.getElementById('swiperWrapper');
               let monthHeight = document.querySelector('.datepicker__month').offsetHeight;
-              swiperWrapper.scrollTop = (this.activeMonthIndex + 1) * monthHeight * 0.8;
+              swiperWrapper.scrollTop = (this.activeMonthIndex) * monthHeight * 0.8;
             },100);
           }
           else {
@@ -629,7 +629,7 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        const currentMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth() - 1;
+        const currentMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth();
         this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
@@ -824,7 +824,6 @@
         height: 100%;
         position: relative;
         width: 100%;
-        z-index: 500;
 
         @include device($phone) {
           &--is-active {

@@ -629,7 +629,7 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        const currentMonthIndex = date.getMonth() - this.firstSelectableDate.getMonth();
+        const currentMonthIndex = moment(date).diff(moment(this.firstSelectableDate), 'months') + 1;
         this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
@@ -677,7 +677,12 @@
       }
     },
     beforeMount() {
-      let currentMonth = this.firstSelectableDate;
+      let currentMonth;
+      if (this.checkIn && this.checkIn < this.firstSelectableDate) {
+        currentMonth = this.checkIn;
+      } else {
+        currentMonth = this.firstSelectableDate;
+      }
       this.createMonth(currentMonth);
       for(let i = 0; i < this.preloadedMonthCount; i++){
         let tempNextMonth = this.getNextMonth(currentMonth);
@@ -685,10 +690,10 @@
         currentMonth = tempNextMonth;
       }
       if (this.checkIn) {
-        this.activeMonthIndex = this.checkIn.getMonth() - this.firstSelectableDate.getMonth();
+        this.activeMonthIndex = moment(this.checkIn).diff(moment(this.firstSelectableDate), 'months');
       }
       if (this.activeMonthIndex < 0) {
-        this.activeMonthIndex = 0;
+        this.activeMonthIndex = Math.abs(this.activeMonthIndex);
       }
       this.parseDisabledDates();
     },

@@ -677,12 +677,10 @@
       }
     },
     beforeMount() {
-      let currentMonth;
       if (this.checkIn && this.checkIn < this.firstSelectableDate) {
-        currentMonth = this.checkIn;
-      } else {
-        currentMonth = this.firstSelectableDate;
+        this.checkIn = this.firstSelectableDate;
       }
+      let currentMonth =  this.firstSelectableDate;
       this.createMonth(currentMonth);
       for(let i = 0; i < this.preloadedMonthCount; i++){
         let tempNextMonth = this.getNextMonth(currentMonth);

@@ -495,6 +495,8 @@
         this.isOpen = false;
         this.checkInClicked = false;
         this.checkOutClicked = false;
+        const currentMonthIndex = moment(this.checkIn).diff(moment(this.firstSelectableDate), 'months');
+        this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
       toggleDatepickerIn() {
@@ -629,8 +631,8 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        const currentMonthIndex = moment(date).diff(moment(this.firstSelectableDate), 'months') + 1;
-        this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
+        // const currentMonthIndex = moment(date).diff(moment(this.firstSelectableDate), 'months') + 1;
+        // this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
       setCheckOut(date) {
@@ -827,6 +829,7 @@
         height: 100%;
         position: relative;
         width: 100%;
+        z-index: 999;
 
         @include device($phone) {
           &--is-active {

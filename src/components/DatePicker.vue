@@ -559,8 +559,10 @@
           this.checkOutClicked = false;
           this.checkInClicked = true;
           if (event.date < this.checkIn) {
-            this.setCheckIn(null);
-            this.setCheckOut(event.date);
+            this.setCheckIn(event.date);
+            this.setCheckOut(null);
+            this.checkInClicked = false;
+            this.checkOutClicked = true;
           } else {
             this.hideIfNotTimePicker();
           }

@@ -633,8 +633,6 @@
 
       setCheckIn(date) {
         this.checkIn = date;
-        // const currentMonthIndex = moment(date).diff(moment(this.firstSelectableDate), 'months') + 1;
-        // this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
       setCheckOut(date) {

@@ -119,7 +119,7 @@ export default {
         if ( this.checkIn !== null &&
             ( moment(this.checkIn).format('YYYYMMDD') == moment(this.date).format('YYYYMMDD') )
         ) {
-          if (this.singleDaySelection) {
+          if (this.singleDaySelection || (this.checkIn.getTime() == this.checkOut.getTime())) {
             return 'datepicker__month-day--first-day-selected';
           } else {
             return 'datepicker__month-day--first-day-selected-background';

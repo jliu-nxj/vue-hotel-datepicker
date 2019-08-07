@@ -464,6 +464,14 @@
         return this.screenSize;
       },
 
+      getMonthDiff(start, end) {
+        const startYear = moment(start).year();
+        const startMonth = moment(start).month();
+        const endYear = moment(end).year();
+        const endMonth = moment(end).month();
+        return (endYear - startYear) * 12 + (endMonth - startMonth);
+      },
+
       reRender() {
         this.show = false;
         this.$nextTick(function() {
@@ -495,7 +503,7 @@
         this.isOpen = false;
         this.checkInClicked = false;
         this.checkOutClicked = false;
-        const currentMonthIndex = moment(this.checkIn).diff(moment(this.firstSelectableDate), 'months');
+        const currentMonthIndex = this.getMonthDiff(this.firstSelectableDate, this.checkIn);
         this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
@@ -690,7 +698,7 @@
         currentMonth = tempNextMonth;
       }
       if (this.checkIn) {
-        this.activeMonthIndex = moment(this.checkIn).diff(moment(this.firstSelectableDate), 'months');
+        this.activeMonthIndex = this.getMonthDiff(this.firstSelectableDate, this.checkIn);
       }
       if (this.activeMonthIndex < 0) {
         this.activeMonthIndex = Math.abs(this.activeMonthIndex);

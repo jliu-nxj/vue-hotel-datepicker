@@ -30,7 +30,6 @@
       )
     .timeselect__wrapper.hide-desktop-and-tablet(
       v-if="showTimePicker"
-      :class="timeselectClass"
     )
       time-select(
         defaultText="Pick up"
@@ -41,7 +40,6 @@
       )
     .timeselect__wrapper.hide-desktop-and-tablet(
       v-if="showTimePicker"
-      :class="timeselectClass"
     )
       time-select(
         defaultText="Drop off"
@@ -110,9 +108,7 @@
                 :is-day-tooltip='isDayTooltip'
                 :check-out-clicked='checkOutClicked'
               )
-        .timeselect__wrapper(
-          :class="timeselectClass"
-        )
+        .timeselect__wrapper
           time-select(
             v-if="showTimePicker"
             defaultText="Pick up"
@@ -121,9 +117,7 @@
             :selectedTime="checkInTime"
             @time-change="handleTimeIn($event)"
           )
-        .timeselect__wrapper(
-          :class="timeselectClass"
-        )
+        .timeselect__wrapper
           time-select(
             v-if="showTimePicker"
             defaultText="Drop off"
@@ -216,7 +210,7 @@
         type: String
       },
       lastSelectableDate: {
-        default: Infinity,
+        default: () => new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         type: [Date, String, Number]
       },
       endingDateValue: {
@@ -305,7 +299,6 @@
         checkInTime: this.startTimeValue,
         checkOutTime: this.endTimeValue,
         months: [],
-        preloadedMonthCount: 11,
         activeMonthIndex: 0,
         nextDisabledDate: null,
         show: true,
@@ -321,6 +314,7 @@
 
     computed: {
       tooltipMessages() {
+        // For flights, we don't want to say nights so it will return 'Day' and 'Days'
         if (this.isDayTooltip) {
           return {
             night: 'Day',
@@ -333,23 +327,14 @@
           };
         }
       },
-      defaulti18n() {
-        return {
-          night: this.tooltipMessages.night,
-          nights: this.tooltipMessages.nights,
-          locale: 'en',
-          'day-names': moment.weekdaysShort(),
-        };
-      },
       dayNames() {
         return moment.weekdaysShort();
       },
       formattedi18n() {
         return {
-          ...this.defaulti18n,
+          ...this.tooltipMessages,
           'check-in': this.startString,
           'check-out': this.endString,
-          'day-names': moment.weekdaysShort(),
         };
       },
       options() {
@@ -363,6 +348,7 @@
           if (this.singleDaySelection) {
             return 'datepicker__input--single-date datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
           }
+          //If the timepicker is not shown, we don't want the input to take up 100% on mobile.
           if (!this.showTimePicker) {
             return 'datepicker__dummy-input--is-active datetimepicker__is-not-expanded';
           } else {
@@ -371,11 +357,6 @@
         } else {
           return '';
         }
-      },
-      timeselectClass() {
-        return {
-          'timeselect__wrapper__date-set': this.checkIn || this.checkOut,
-        };
       },
     },
 
@@ -405,6 +386,7 @@
 
           if (value) {
             bodyClassList.add('-overflow-hidden');
+            // This is used to scroll the datepicker to the appropriate month on mobile
             setTimeout(() => {
               let swiperWrapper = document.getElementById('swiperWrapper');
               let monthHeight = document.querySelector('.datepicker__month').offsetHeight;
@@ -433,12 +415,16 @@
     methods: {
       ...Helpers,
 
+      /* Used to format the date based on whether it is just a date or if its datetime.
+      * In addition, it should show datetime together on desktop and tablet as the timepicker
+      * will be inside the datepicker rather than next to it on smartphones. */
       formatDate(date, time) {
         let dateTime = '';
         if (date) {
           dateTime = moment(date).format(this.format);
         }
         if (time && this.screenSize !== 'smartphone') {
+          // If internationalization, we want to show time in 24 hour time
           if (this.i18n) {
             dateTime = `${dateTime}, ${time}`;
           } else {
@@ -462,6 +448,7 @@
         return this.screenSize;
       },
 
+      // Used to get the month difference between the two months. Make sure start is before end date.
       getMonthDiff(start, end) {
         const startYear = moment(start).year();
         const startMonth = moment(start).month();
@@ -479,6 +466,9 @@
 
       openDatePicker() {
         this.isOpen = true;
+        /* The purpose of the below code logic is to move the datepicker when it's opened outside of the edge of the screen.
+        * To do this, I needed to grab the datepicker element and check if the leftEdge or rightEdge is less than 0. In turn, this
+        * will determine if it's off the screen and apply css accordingly. */
         setTimeout(function() {
           const datePickerOpen = document.getElementsByClassName('datepicker--open')[0];
           if (datePickerOpen) {
@@ -505,12 +495,16 @@
         this.activeMonthIndex = currentMonthIndex > 0 ? currentMonthIndex : 0;
       },
 
+      /* Logic for making it so that the check-in date will be the one that is changed when a
+      * user clicks on the date input */
       toggleDatepickerIn() {
         this.checkInClicked = true;
         this.checkOutClicked = false;
         this.openDatePicker();
       },
 
+      /* Logic for making it so that the check-out date will be the one that is changed when a
+      * user clicks on the date input */
       toggleDatepickerOut() {
         this.checkInClicked = false;
         this.checkOutClicked = true;
@@ -523,6 +517,8 @@
         }
       },
 
+      /* If the time picker is not shown, then we want to close the datepicker immediately after
+      * they select a date */
       hideIfNotTimePicker() {
         if (!this.showTimePicker) {
           this.hideDatepicker();
@@ -531,8 +527,9 @@
         }
       },
 
+      /* The mastermind of it all for when a user clicks a date. All of this logic makes it so that
+      * selecting a date is as foolproof as possible for a user */
       handleDayClick(event) {
-
         if (this.checkIn == null && this.singleDaySelection == false) {
           if (this.checkOut !== null && event.date < this.checkOut) {
             this.setCheckIn(event.date);
@@ -611,6 +608,11 @@
           return;
         }
 
+        /* All of the below logic is from the previous code. It makes it so that if the user continues
+        * to click next month, after the last two initial rendered months, then it will create a month
+        * so that they aren't left with a empty screen. However, since we hardcode a last selectable date
+        * and render all the months initially up to the last selectable month, the code below will never render.
+        */
         let firstDayOfLastMonth;
 
         if (this.screenSize !== 'desktop') {
@@ -690,7 +692,11 @@
       }
       let currentMonth =  this.firstSelectableDate;
       this.createMonth(currentMonth);
-      for(let i = 0; i < this.preloadedMonthCount; i++){
+      let preloadedMonthCount = this.getMonthDiff(this.firstSelectableDate, this.lastSelectableDate);
+      /* We want to render/preload all the months before we mount because we don't have a "more months" button on mobile.
+      Currently the preloadedMonthsCount is set to 11 as we already render the currentMonth based on the first selectable date
+      so there are 11 months left the lastSelectableDate which is by default, 1 year after todays date.*/
+      for(let i = 0; i < preloadedMonthCount; i++){
         let tempNextMonth = this.getNextMonth(currentMonth);
         this.createMonth(tempNextMonth);
         currentMonth = tempNextMonth;

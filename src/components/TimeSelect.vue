@@ -169,6 +169,7 @@ export default {
     },
   },
   computed: {
+    /* This method returns the times in either 12 or 24 hour times in the dropdown menu based on if i18n is true */
     timePairs() {
       if (this.i18n) {
         return this.militaryTimes.map((time) => (
@@ -187,9 +188,13 @@ export default {
       }
     },
     dropDownMenuStyle() {
+      /* On mobile, the check-in dropdown should show above the check-out
+      * dropdown if both are open at the same time. */
       let zIndex = 100 - this.timeIndex;
       return `z-index: ${zIndex}`;
     },
+    /* Method used to grab the time in the correct format. As we are using spans and not select, we are unable to use
+    * HTMLElement.value to get the value so this a workaround */
     currentTime() {
       if (this.selectedTime !== null) {
         let index;

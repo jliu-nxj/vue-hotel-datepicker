@@ -316,8 +316,6 @@
         yUp: null,
         sortedDisabledDates: null,
         screenSize: this.handleWindowResize(),
-        xcheckin: null,
-        xcheckout: null,
       };
     },
 

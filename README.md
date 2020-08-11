@@ -1,44 +1,5 @@
-[![Code Climate](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/badges/gpa.svg)](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/)
-[![Issue Count](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker/badges/issue_count.svg)](https://codeclimate.com/github/krystalcampioni/vue-hotel-datepicker)
-[![dependencies Status](https://david-dm.org/krystalcampioni/vue-hotel-datepicker/status.svg)](https://david-dm.org/krystalcampioni/vue-hotel-datepicker) [![devDependencies Status](https://david-dm.org/krystalcampioni/vue-hotel-datepicker/dev-status.svg)](https://david-dm.org/krystalcampioni/vue-hotel-datepicker?type=dev)
-[![npm](https://img.shields.io/npm/dt/vue-hotel-datepicker.svg)](vue-hotel-datepicker)
-[![Build Status](https://travis-ci.org/krystalcampioni/vue-hotel-datepicker.svg?branch=master)](https://travis-ci.org/krystalcampioni/vue-hotel-datepicker)
-
-# vue-hotel-datepicker
+# date-time-picker
 A responsive date range picker for Vue.js that displays the number of nights selected and allow several useful options like custom check-in/check-out rules, localisation support and more.
-
-
-![demo gif](https://github.com/krystalcampioni/vue-hotel-datepicker/blob/master/demo.gif?raw=true)
-
-
-
-## Demo
-[https://krystalcampioni.github.io/vue-hotel-datepicker/](https://krystalcampioni.github.io/vue-hotel-datepicker/)
-
-## Installation
-
-#### NPM
-
-Install the package:
-
-```
-npm install vue-hotel-datepicker --save
-```
-
-```javascript
-import HotelDatePicker from 'vue-hotel-datepicker'
-
-export default {
-  components: {
-    HotelDatePicker,
-  },
-}
-```
-
-```html
-<HotelDatePicker />
-```
-
 
 ## Props/Options
 
@@ -47,11 +8,11 @@ export default {
 - Type: `String`
 - Default: `YYYY-MM-DD`
 
-The date format string.
+The date format string to display.
 
-### startDate
+### firstSelectableDate
 
-- Type: `Date` or `String`
+- Type: `Date`
 - Default: `new Date()`
 
 The start view date. All the dates before this date will be disabled.
@@ -63,10 +24,17 @@ The start view date. All the dates before this date will be disabled.
 
 The initial value of the start date.
 
-### endDate
+### startingTimeValue
 
-- Type: `Date` or `String` or `Boolean`
-- Default: `false`
+- Type: `String`
+- Default: `null`
+
+The initial value of the start time.
+
+### lastSelectableDate
+
+- Type: `Date` or `String` or `Number`
+- Default: `Infinity`
 
 The end view date. All the dates after this date will be disabled.
 
@@ -77,6 +45,13 @@ The end view date. All the dates after this date will be disabled.
 
 The initial value of the end date.
 
+### endingTimeValue
+
+- Type: `String`
+- Default: `null`
+
+The initial value of the end time.
+
 ### firstDayOfWeek
 
 - Type: `Number`
@@ -84,19 +59,17 @@ The initial value of the end date.
 
 The first day of the week. Where Sun = 0, Mon = 1, ... Sat = 6.
 
-You need to set the right order in `i18n.day-names` too.
-
 ### minNights
 
 - Type: `Number`
-- Default: `1`
+- Default: `0`
 
 Minimum nights required to select a range of dates.
 
 ### maxNights
 
 - Type: `Number`
-- Default: `0`
+- Default: `null`
 
 Maximum nights required to select a range of dates.
 
@@ -121,14 +94,6 @@ An array of strings in this format: `['Monday', 'Tuesday', 'Wednesday', 'Thursda
 An array of numbers. Example: `[7,10,14]`.
 After selecting the start date the calendar will be updated only allowing the checkout 7, 10 or 14 days after.
 
-### enableCheckout
-
-- Type: `Boolean`
-- Default: `false`
-
-If `true`, allows the checkout on a disabled date.
-
-
 ### hoveringTooltip
 
 - Type: `Boolean` or `Function`
@@ -148,39 +113,40 @@ If provided, it will override the default tooltip "X nights" with the text provi
 - Type `boolean`
 - Default `false`
 
-## showYear
-
-- Type `boolean`
-- Default `false`
-
-Shows the year next to the month
-
 ## closeDatepickerOnClickOutside
 - Type: `boolean`
 - Default: `true`
 
-## displayClearButton
-- Type: `boolean`
-- Default: `true`
-
-If set to true, displays a clear button on the right side of the input if there are dates set
-
 ### i18n
 
-- Type: `Object`
+- Type: `Boolean`
+- Default: `false`
 
-Default:
+If true, will return 24 Hour Time rather than 12 Hour Time with AM/PM.
 
-```js
-i18n: {
-  night: 'Night',
-  nights: 'Nights',
-  'day-names': ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'],
-  'check-in': 'Check-in',
-  'check-out': 'Check-Out',
-  'month-names': ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-}
-```
+## showTimePicker
+- Type: `Boolean`
+- Default: `false`
+
+Shows the time select picker when true.
+
+## startString
+- Type: `String`
+- Required: `true`
+
+Will show this string in the checkIn box by default when `startingDateValue` is empty/null.
+
+## endString
+- Type: `String`
+- Required: `true`
+
+Will show this string in the checkOut box by default when `endingDateValue` is empty/null.
+
+# autoCloseDatepicker
+- Type: `Boolean`
+- Required: `true`
+
+Boolean that is used to either close datepicker on endDate selection or leave it open (to allow for time select)
 
 
 ## API
@@ -200,11 +166,14 @@ Toggle datepicker
 
 ## Events
 
-### checkInChanged
+### check-in-changed
 Emitted every time a new check in date is selected with the new date as payload
 
-### checkOutChanged
+### check-out-changed
 Emitted every time a new check out date is selected with the new date as payload
 
-## Credits
-This component was originally built as a Vue wrapper component for the [Hotel Datepicker](https://github.com/benitolopez/hotel-datepicker) by @benitolopez. Version 2.0.0 was completely rewritten with Vue, removing the original library, removing some features and introducing others.
+### time-in-changed
+Emitted every time a new time in value is selected with the new time string as payload
+
+### time-out-changed
+Emitted every time a new time out value is selected with the new time string as payload
